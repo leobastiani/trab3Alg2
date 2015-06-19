@@ -7,13 +7,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
-
 #define FILENAMEARVOREB "arvoreB.btree"
 
 #define ORDEM 6
 
 typedef uint      id_type;
 typedef long int  offset_t;
+typedef uint      page_t;
 
 typedef struct {
 	id_type id;
@@ -21,15 +21,16 @@ typedef struct {
 } arvoreb_elem_t;
 
 typedef struct {
-	struct arvoreb_node_t *root;
+	page_t root;
 	uint num_pages;
-	uint empty_page;
+	page_t empty_pages;
+	FILE *fd; // arquivo da árvore que fica constantemente aberto
 } arvoreb_t;
 
 typedef struct arvoreb_node_t {
-	uint page_num;
-	arvoreb_elem_t *chaves;
-	struct arvoreb_node_t *filhos;
+	uint page_num; // é o número da página no disco, começa no 1
+	arvoreb_elem_t chaves[ORDEM-1];
+	page_t filhos[ORDEM];
 	uint8_t num_chaves;
 	bool is_folha;
 } arvoreb_node_t;
@@ -41,17 +42,31 @@ void initArvoreB(arvoreb_t *arv);
 
 arvoreb_t *createArvoreB();
 
+void saveToFileArvoreB(arvoreb_t *arv);
+
+void loadArvoreBFromFile(arvoreb_t *arv);
+
+void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node);
+
+bool isEmptyArvoreB(arvoreb_t *arv);
+
+bool isPageFull(arvoreb_t *arv, page_t page);
+
+offset_t pageToOffset(page_t page);
+
+arvoreb_node_t *loadNodeFromFile(arvoreb_t *arv, page_t page);
+
 /* ====================================================
    BUSCA
    ==================================================== */
-arvoreb_elem_t *searchArvoreB(arvoreb_t *arv, id_type id);
+offset_t searchArvoreB(arvoreb_t *arv, id_type id);
 
-arvoreb_elem_t *_searchArvoreB(arvoreb_node_t *node, id_type id);
+offset_t _searchArvoreB(page_t node, id_type id);
 
 /* ====================================================
    INSERÇÃO
    ==================================================== */
-bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset_t);
+bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset);
 
 /* ====================================================
    REMOÇÃO
@@ -59,8 +74,19 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset_t);
 bool removeArvoreB(arvoreb_t *arv, id_type id);
 
 /* ====================================================
+   NÓS
+   ==================================================== */
+void initNodeArvoreB(arvoreb_node_t *node);
+
+arvoreb_node_t *createNodeArvoreB();
+
+/* ====================================================
    DESALOCA DA MEMÓRIA
    ==================================================== */
 void freeArvoreB(arvoreb_t *arv);
+
+void printArvoreB(arvoreb_t *arv);
+
+void printPagesArvoreB(arvoreb_t *arv, page_t page);
 
 #endif //__ARVOREB_H__

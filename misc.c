@@ -14,7 +14,7 @@
 
 // 02.06.2015
 
-#define CHECK_LEAK
+// #define CHECK_LEAK
 
 // getchar que não deixa enter no buffer
 char _getchar() {

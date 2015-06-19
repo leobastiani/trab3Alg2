@@ -22,4 +22,4 @@ debug: $(SOURCES)
 	$(CC) $< -o $@ $(CFLAGS)
 
 clear:
-	rm *.o & rm $(EXECUTABLE)
+	rm *.o & rm $(EXECUTABLE) & rm arvoreB.btree
