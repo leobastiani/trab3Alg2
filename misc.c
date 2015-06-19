@@ -271,5 +271,5 @@ int printfVerticaly(char *str) {
 
 // cria uma seção para facilitar o debug da saida
 void section(char *str) {
-	printf("\n/* =============================\n	 %s\n	 ============================= */\n", str);
+	printf("\n/* =============================\n   %s\n   ============================= */\n", str);
 }
