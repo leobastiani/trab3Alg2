@@ -204,8 +204,8 @@ void printPagesArvoreB(arvoreb_t *arv, page_t page) {
 	for(i=0; i<node->num_chaves; i++) {
 		printf("\t\tChave: %-2d => offset: %-2ld\n", node->chaves[i].id, node->chaves[i].offset);
 	}
+	free(node);
 	for(i=0; i<ORDEM; i++) {
 		printPagesArvoreB(arv, filhos[i]);
 	}
-	free(node);
 }
