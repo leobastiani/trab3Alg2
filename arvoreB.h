@@ -82,6 +82,16 @@ void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
 void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
+arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
+arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
+void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
+void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
+void borrowFromNext(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
 // função que une idx com idx+1
 void mergeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 

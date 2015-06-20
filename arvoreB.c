@@ -213,10 +213,12 @@ bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id) {
 	}
 	// está em algum dos filhos
 	bool estaNoUltimoFilho = (idx == node->num_chaves);
-	/*if(node->filhos[idx].num_chaves < MIN_CHAVES) {
+	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	if(filho_esquerdo->num_chaves < MIN_CHAVES) {
 		// se o filho da chave que encontramos não possui o mínimo de chaves, vamos preencher este filhos
-		// fillNodeArvoreB(arv, node, idx);
-	}*/
+		fillNodeArvoreB(arv, node, idx);
+	}
+	free(filho_esquerdo);
 	// continua procurando para os filhos desse idx
 	page_t prox_pagina;
 	if(estaNoUltimoFilho && idx > node->num_chaves) {
@@ -254,7 +256,9 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	bool runExit = false;
 	if(filho_esquerdo->num_chaves >= MIN_CHAVES) {
 		runExit = true;
-		// TODO!
+		arvoreb_elem_t pred = getPred(arv, node, idx);
+		node->chaves[idx] = pred;
+		removeNodeArvoreB(arv, filho_esquerdo, pred.id);
 	}
 	free(filho_esquerdo);
 	if(runExit) {
@@ -265,7 +269,9 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
 	if(filho_direito->num_chaves >= MIN_CHAVES) {
 		runExit = true;
-		// TODO!
+		arvoreb_elem_t succ = getSucc(arv, node, idx);
+		node->chaves[idx] = succ;
+		removeNodeArvoreB(arv, filho_direito, succ.id);
 	}
 	free(filho_direito);
 	if(runExit) {
@@ -277,6 +283,106 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
 	removeNodeArvoreB(arv, filho_esquerdo, id);
 	free(filho_esquerdo);
+}
+
+arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	// obtem o maior filho da subárvore da esquerda
+	arvoreb_elem_t result;
+	page_t next_page = node->filhos[idx];
+	while(next_page != -1) {
+		arvoreb_node_t *cur = loadNodeFromFile(arv, next_page);
+		next_page = cur->filhos[cur->num_chaves];
+		result = cur->chaves[cur->num_chaves-1];
+		free(cur);
+	}
+	return result;
+}
+
+arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	// obtem o menor filho da subárvore da direita
+	arvoreb_elem_t result;
+	page_t next_page = node->filhos[idx+1];
+	while(next_page != -1) {
+		arvoreb_node_t *cur = loadNodeFromFile(arv, next_page);
+		next_page = cur->filhos[0];
+		result = cur->chaves[0];
+		free(cur);
+	}
+	return result;
+}
+
+void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx-1]);
+	if(idx != 0 && filho_esquerdo->num_chaves >= MIN_CHAVES) {
+		borrowFromPrev(arv, node, idx);
+	}
+	free(filho_esquerdo);
+
+	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+	if(idx != node->num_chaves && filho_direito->num_chaves >= MIN_CHAVES) {
+		borrowFromNext(arv, node, idx);
+	}
+	free(filho_direito);
+
+	// se foi removido do meio da página, junta os filhos
+	if(idx != node->num_chaves) {
+		// último filho
+		mergeNodeArvoreB(arv, node, idx);
+	} else {
+		// penúltimo filho
+		mergeNodeArvoreB(arv, node, idx-1);
+	}
+}
+
+void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx]);
+	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx-1]);
+
+	int i;
+	for(i=filho_direito->num_chaves-1; i>=0; i--) {
+		filho_direito->chaves[i+1] = filho_direito->chaves[i];
+	}
+	if(!filho_direito->is_folha) {
+		for(i=filho_direito->num_chaves; i>=0; i++) {
+			filho_direito->filhos[i+1] = filho_direito->filhos[i];
+		}
+	}
+	filho_direito->chaves[0] = node->chaves[idx-1];
+	if(!node->is_folha) {
+		filho_direito->filhos[0] = filho_esquerdo->filhos[filho_esquerdo->num_chaves];
+	}
+	node->chaves[idx-1] = filho_esquerdo->chaves[filho_esquerdo->num_chaves-1];
+
+	filho_direito->num_chaves++;
+	filho_esquerdo->num_chaves--;
+
+	free(filho_esquerdo);
+	free(filho_direito);
+}
+
+void borrowFromNext(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+
+	filho_esquerdo->chaves[filho_esquerdo->num_chaves] = node->chaves[idx];
+	if(!filho_esquerdo->is_folha) {
+		filho_esquerdo->filhos[filho_esquerdo->num_chaves+1] = filho_direito->filhos[0];
+	}
+	node->chaves[idx] = filho_direito->chaves[0];
+	int i;
+	for(i=1; i<filho_direito->num_chaves; i++) {
+		filho_direito->chaves[i-1] = filho_direito->chaves[i];
+	}
+	if(!filho_direito->is_folha) {
+		for(i=0; i<=filho_direito->num_chaves; i++) {
+			filho_direito->filhos[i-1] = filho_direito->filhos[i];
+		}
+	}
+	filho_esquerdo->num_chaves++;
+	filho_direito->num_chaves--;
+
+	free(filho_esquerdo);
+	free(filho_direito);
 }
 
 // função que une idx com idx+1

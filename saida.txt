@@ -1,0 +1,2 @@
+gcc test.c main.c misc.c arvoreB.c -o t3 -DTEST -DDEBUG
+Makefile:18: recipe for target 'debug' failed
