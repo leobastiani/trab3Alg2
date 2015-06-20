@@ -12,6 +12,8 @@ int main(int argc, char *argv[]) {
 	arvoreb_t *arv = createArvoreB();
 	insertArvoreB(arv, 1, 2);
 	printArvoreB(arv);
+	removeArvoreB(arv, 1);
+	printArvoreB(arv);
 
 	freeArvoreB(arv);
 	free(arv);

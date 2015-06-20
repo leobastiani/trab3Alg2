@@ -149,6 +149,69 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset) {
    REMOÇÃO
    ==================================================== */
 bool removeArvoreB(arvoreb_t *arv, id_type id) {
+	if(isEmptyArvoreB(arv)) {
+		return false;
+	}
+	#ifdef DEBUG
+		printf("Removendo a chave com ID: %d\n", id);
+	#endif // DEBUG
+	arvoreb_node_t *root = loadNodeFromFile(arv, arv->root);
+	bool result = removeNodeArvoreB(arv, root, id);
+	if(root->num_chaves == 0) {
+		// a raiz está vazia
+		if(root->is_folha) {
+			arv->root = -1;
+		} else {
+			// se ele n for folha, o primeiro filho passa a ser a raiz
+			arv->root = root->filhos[0];
+		}
+	}
+	free(root);
+	return result;
+}
+
+int getIndexNodeArvoreB(arvoreb_node_t *node, id_type id) {
+	int i = 0;
+	while(i < ORDEM-1 && node->chaves[i].id < id) {
+		i++;
+	}
+	return i;
+}
+
+bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id) {
+	int idx = getIndexNodeArvoreB(node, id);
+	if(idx < node->num_chaves && node->chaves[idx].id == id) {
+		// o id está nesse nó
+		if(node->is_folha) {
+			removeFromFolha(arv, node, idx);
+		} else {
+			removeFromNonFolha(arv, node, idx);
+		}
+		return true;
+	}
+	// procura em outros nós
+	if(node->is_folha) {
+		// chave não encontrada
+		return false;
+	}
+	// está em algum dos filhos
+	bool estaNoUltimoFilho = (idx == node->num_chaves);
+	return true;
+}
+
+void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	// move todos os ídices a direita dele para a esquerda
+	int i;
+	for(i=idx+1; i<node->num_chaves; i++) {
+		node->chaves[i-1] = node->chaves[i];
+	}
+	// reduz uma chave
+	node->num_chaves--;
+	// salva no arquivo
+	saveNodeToFile(arv, node);
+}
+
+void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 
 }
 
@@ -185,6 +248,7 @@ void printArvoreB(arvoreb_t *arv) {
 	printf("empty_pages => %d\n", arv->empty_pages);
 	// imrpimindo nós
 	printPagesArvoreB(arv, arv->root);
+	printf("\n\n");
 }
 
 void printPagesArvoreB(arvoreb_t *arv, page_t page) {

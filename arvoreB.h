@@ -73,6 +73,14 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset);
    ==================================================== */
 bool removeArvoreB(arvoreb_t *arv, id_type id);
 
+int getIndexNodeArvoreB(arvoreb_node_t *node, id_type id);
+
+bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id);
+
+void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
+void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
 /* ====================================================
    NÓS
    ==================================================== */
