@@ -56,19 +56,25 @@ void loadArvoreBFromFile(arvoreb_t *arv) {
 }
 
 void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node) {
-	// TESTAR ANTES SE FOI REMOVIDO ALGUM NÓ
 	if(node->page_num == 0) {
 		// o valor da página é desconhecido, portanto, devemos criar uma página nova no disco
 		if(arv->empty_pages != -1) {
-			return ;
+			// obtem o primeiro nó da lista de vazios
+			arvoreb_node_t *empty_node = loadNodeFromFile(arv, arv->empty_pages);
+			// define a próxima página da lista de vazios
+			arv->empty_pages = empty_node->filhos[0];
+			saveToFileArvoreB(arv);
+			// este nó será salvo no lugar do nó vazio
+			node->page_num = empty_node->page_num;
+			free(empty_node);
 		} else {
 			// cria uma nova página no arquivo
 			#ifdef DEBUG
 				printf("Criando uma página nova no disco\n");
 			#endif // DEBUG
-			arv->num_pages++; // aumenta o número de páginas
-			node->page_num = arv->num_pages; // 1, 2, 3, ...
+			node->page_num = arv->num_pages+1; // 1, 2, 3, ...
 		}
+		arv->num_pages++; // aumenta o número de páginas
 	}
 	if(node->num_chaves == 0) {
 		// se este nó não possui nenhuma chave, inclui ele na lista de vazios
