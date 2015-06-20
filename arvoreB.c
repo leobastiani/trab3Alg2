@@ -213,7 +213,24 @@ bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id) {
 	}
 	// está em algum dos filhos
 	bool estaNoUltimoFilho = (idx == node->num_chaves);
-	return true;
+	/*if(node->filhos[idx].num_chaves < MIN_CHAVES) {
+		// se o filho da chave que encontramos não possui o mínimo de chaves, vamos preencher este filhos
+		// fillNodeArvoreB(arv, node, idx);
+	}*/
+	// continua procurando para os filhos desse idx
+	page_t prox_pagina;
+	if(estaNoUltimoFilho && idx > node->num_chaves) {
+		// foi retirado um filho
+		prox_pagina = node->filhos[idx-1];
+	} else {
+		// procura no último msmo, normalzin
+		prox_pagina = node->filhos[idx];
+	}
+	free(node);
+	node = loadNodeFromFile(arv, prox_pagina);
+	bool result = removeNodeArvoreB(arv, node, id);
+	free(node);
+	return result;
 }
 
 void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
@@ -229,7 +246,70 @@ void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 }
 
 void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	// não passei o id pelo argumento, mas é fácil resgatá-lo
+	id_type id = node->chaves[idx].id;
 
+	// para o filho esquerdo
+	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	bool runExit = false;
+	if(filho_esquerdo->num_chaves >= MIN_CHAVES) {
+		runExit = true;
+		// TODO!
+	}
+	free(filho_esquerdo);
+	if(runExit) {
+		return ;
+	}
+
+	// para o filho direito
+	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+	if(filho_direito->num_chaves >= MIN_CHAVES) {
+		runExit = true;
+		// TODO!
+	}
+	free(filho_direito);
+	if(runExit) {
+		return ;
+	}
+
+	// se os filhos da direita e da esquerda possui menos de MIN_CHAVES
+	mergeNodeArvoreB(arv, node, idx);
+	filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	removeNodeArvoreB(arv, filho_esquerdo, id);
+	free(filho_esquerdo);
+}
+
+// função que une idx com idx+1
+void mergeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+
+	filho_esquerdo->chaves[MIN_CHAVES-1] = node->chaves[idx];
+	int i;
+	for(i=0; i<filho_direito->num_chaves; i++) {
+		filho_esquerdo->chaves[i+MIN_CHAVES] = filho_direito->chaves[i];
+	}
+	if(!filho_esquerdo->is_folha) {
+		for(i=0; i<=filho_direito->num_chaves; i++) {
+			filho_esquerdo->filhos[i+MIN_CHAVES] = filho_direito->filhos[i];
+		}
+	}
+	for(i=idx+1; i<node->num_chaves; i++) {
+		node->chaves[i-1] = node->chaves[i];
+	}
+
+	for(i=idx+2; i<=node->num_chaves; i++) {
+		node->filhos[i-1] = node->filhos[i];
+	}
+	filho_esquerdo->num_chaves += filho_direito->num_chaves+1;
+	node->num_chaves--;
+
+
+	saveNodeToFile(arv, node);
+	saveNodeToFile(arv, filho_esquerdo);
+	saveNodeToFile(arv, filho_direito);
+	free(filho_esquerdo);
+	free(filho_direito);
 }
 
 /* ====================================================

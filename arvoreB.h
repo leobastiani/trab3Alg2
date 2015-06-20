@@ -10,6 +10,7 @@
 #define FILENAMEARVOREB "arvoreB.btree"
 
 #define ORDEM 6
+#define MIN_CHAVES ORDEM/2
 
 typedef uint      id_type;
 typedef long int  offset_t;
@@ -80,6 +81,9 @@ bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id);
 void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
 void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
+
+// função que une idx com idx+1
+void mergeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
 /* ====================================================
    NÓS
