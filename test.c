@@ -10,6 +10,7 @@
 
 int main(int argc, char *argv[]) {
 	arvoreb_t *arv = createArvoreB();
+	printArvoreB(arv);
 	insertArvoreB(arv, 1, 2);
 	printArvoreB(arv);
 	removeArvoreB(arv, 1);

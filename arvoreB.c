@@ -12,7 +12,7 @@
    ==================================================== */
 void initArvoreB(arvoreb_t *arv) {
 	// apenas zera por completo a árvore
-	memset(arv, 0, sizeof(arv));
+	memset(arv, 0, sizeof(arvoreb_t));
 	if(file_exists(FILENAMEARVOREB)) {
 		// se a árvore já existe, carrega ela do arquivo
 		arv->fd = fopen(FILENAMEARVOREB, "r+");
@@ -49,6 +49,7 @@ void loadArvoreBFromFile(arvoreb_t *arv) {
 	#ifdef DEBUG
 		printf("Carregando a árvore da memória\n");
 	#endif // DEBUG
+	rewind(arv->fd);
 	fread(&arv->root, sizeof(page_t), 1, arv->fd);
 	fread(&arv->num_pages, sizeof(uint), 1, arv->fd);
 	fread(&arv->empty_pages, sizeof(page_t), 1, arv->fd);
@@ -68,6 +69,15 @@ void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node) {
 			arv->num_pages++; // aumenta o número de páginas
 			node->page_num = arv->num_pages; // 1, 2, 3, ...
 		}
+	}
+	if(node->num_chaves == 0) {
+		// se este nó não possui nenhuma chave, inclui ele na lista de vazios
+		// adiciona a próxima página a lista
+		node->filhos[0] = arv->empty_pages;
+		// define o primeiro da pilha
+		arv->empty_pages = node->page_num;
+		arv->num_pages--;
+		saveToFileArvoreB(arv);
 	}
 	fseek(arv->fd, pageToOffset(node->page_num), SEEK_SET);
 	fwrite(node, sizeof(arvoreb_node_t), 1, arv->fd);
@@ -165,6 +175,7 @@ bool removeArvoreB(arvoreb_t *arv, id_type id) {
 			// se ele n for folha, o primeiro filho passa a ser a raiz
 			arv->root = root->filhos[0];
 		}
+		saveToFileArvoreB(arv);
 	}
 	free(root);
 	return result;
