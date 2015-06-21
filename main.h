@@ -1,11 +1,4 @@
-#ifndef TEST
-#ifdef __WIN32
-	#include <Windows.h>
-	#define Sleep(time) void sleep(time) 
-#else
-	#include <unistd.h>
-#endif
-
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "arvoreB.h"
@@ -28,4 +21,3 @@ void Busca_usuario(arvoreb_t *btree);
 void Load_reg(FILE *reg, arvoreb_t *btree);
 int altera_srt(char *str);
 void strTOstruct(char *str, usr_t *usr);
-#endif // TEST
