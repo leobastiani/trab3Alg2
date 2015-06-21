@@ -32,12 +32,19 @@ void initArvoreB(arvoreb_t *arv) {
 	saveToFileArvoreB(arv);
 }
 
+/**
+ * Cria a árvore B e inicializa a árvore B
+ * @return precisa de free
+ */
 arvoreb_t *createArvoreB() {
 	arvoreb_t *result = malloc(sizeof(arvoreb_t));
 	initArvoreB(result);
 	return result;
 }
 
+/**
+ * Salva a árvore B no arquivo
+ */
 void saveToFileArvoreB(arvoreb_t *arv) {
 	rewind(arv->fd);
 	fwrite(&arv->root, sizeof(page_t), 1, arv->fd);
@@ -45,6 +52,9 @@ void saveToFileArvoreB(arvoreb_t *arv) {
 	fwrite(&arv->empty_pages, sizeof(page_t), 1, arv->fd);
 }
 
+/**
+ * Carrega a árvore B do arquivo
+ */
 void loadArvoreBFromFile(arvoreb_t *arv) {
 	#ifdef DEBUG
 		printf("Carregando a árvore da memória\n");
@@ -55,6 +65,9 @@ void loadArvoreBFromFile(arvoreb_t *arv) {
 	fread(&arv->empty_pages, sizeof(page_t), 1, arv->fd);
 }
 
+/**
+ * Salva um nó da árvore no arquivo
+ */
 void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node) {
 	if(node->page_num == 0) {
 		// o valor da página é desconhecido, portanto, devemos criar uma página nova no disco
@@ -89,10 +102,19 @@ void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node) {
 	fwrite(node, sizeof(arvoreb_node_t), 1, arv->fd);
 }
 
+/**
+ * verifica se a árvore está vazia
+ * @return     true or false
+ */
 bool isEmptyArvoreB(arvoreb_t *arv) {
 	return arv->root == -1;
 }
 
+/**
+ * Verifica se a página está vazia
+ * @param  page um inteiro que identifica a página no disco
+ * @return      true or false
+ */
 bool isPageFull(arvoreb_t *arv, page_t page) {
 	bool result;
 	arvoreb_node_t *node = loadNodeFromFile(arv, page);
@@ -101,6 +123,10 @@ bool isPageFull(arvoreb_t *arv, page_t page) {
 	return result;
 }
 
+/**
+ * retorna o offset da página no arquivo de dados
+ * @param  page um inteiro que identifica a página no disco
+ */
 offset_t pageToOffset(page_t page) {
 	// anda o número de páginas
 	offset_t result = ((page - 1) * sizeof(arvoreb_node_t));
@@ -109,6 +135,11 @@ offset_t pageToOffset(page_t page) {
 	return result;
 }
 
+/**
+ * Carrega a página no disco e devolve o ponteiro do nó
+ * @param  page um inteiro que identifica a página no disco
+ * @return      precisa de free
+ */
 arvoreb_node_t *loadNodeFromFile(arvoreb_t *arv, page_t page) {
 	arvoreb_node_t *result = createNodeArvoreB();
 	fseek(arv->fd, pageToOffset(page), SEEK_SET);
@@ -164,6 +195,10 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset) {
 /* ====================================================
    REMOÇÃO
    ==================================================== */
+/**
+ * Remove o elemento que possui o ID infromado por parâmetro
+ * @return     true se foi encontrado
+ */
 bool removeArvoreB(arvoreb_t *arv, id_type id) {
 	if(isEmptyArvoreB(arv)) {
 		return false;
@@ -187,6 +222,12 @@ bool removeArvoreB(arvoreb_t *arv, id_type id) {
 	return result;
 }
 
+/**
+ * obtem um índice maior ou igual a devida posição da chave no Nó
+ * @param  node nó que a chave será procurado
+ * @param  id   id do elemento
+ * @return      a posição do índice, sendo ela maior ou igual
+ */
 int getIndexNodeArvoreB(arvoreb_node_t *node, id_type id) {
 	int i = 0;
 	while(i < ORDEM-1 && node->chaves[i].id < id) {
@@ -195,6 +236,12 @@ int getIndexNodeArvoreB(arvoreb_node_t *node, id_type id) {
 	return i;
 }
 
+/**
+ * remove um elemento do nó na árvore b
+ * @param  node nó em que será procurado o elemento
+ * @param  id   id do elemento
+ * @return      true se foi removido com sucesso
+ */
 bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id) {
 	int idx = getIndexNodeArvoreB(node, id);
 	if(idx < node->num_chaves && node->chaves[idx].id == id) {
@@ -235,6 +282,10 @@ bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id) {
 	return result;
 }
 
+/**
+ * remove um elemento de um nó folha
+ * @param idx  índice do elemento no nó da árvore
+ */
 void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	// move todos os ídices a direita dele para a esquerda
 	int i;
@@ -247,6 +298,10 @@ void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	saveNodeToFile(arv, node);
 }
 
+/**
+ * remove um elemento do nó da árvore que não é folha
+ * @param idx  índice do elemento no nó da árvore
+ */
 void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	// não passei o id pelo argumento, mas é fácil resgatá-lo
 	id_type id = node->chaves[idx].id;
@@ -285,8 +340,11 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	free(filho_esquerdo);
 }
 
+/**
+ * obtém o maior elemento da subárvore da esquerda
+ * @param  idx  índice do elemento no nó Node
+ */
 arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	// obtem o maior filho da subárvore da esquerda
 	arvoreb_elem_t result;
 	page_t next_page = node->filhos[idx];
 	while(next_page != -1) {
@@ -298,8 +356,11 @@ arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	return result;
 }
 
+/**
+ * obtém o menor elemento da subárvore da direita
+ * @param  idx  índice do elemento no nó Node
+ */
 arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	// obtem o menor filho da subárvore da direita
 	arvoreb_elem_t result;
 	page_t next_page = node->filhos[idx+1];
 	while(next_page != -1) {
@@ -311,16 +372,24 @@ arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	return result;
 }
 
+/**
+ * preenche o filho[idx] com algum dos filhos de Node que possui menos do que MIN_CHAVES
+ * @param idx  um inteiro que identifica a página no disco
+ */
 void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx-1]);
 	if(idx != 0 && filho_esquerdo->num_chaves >= MIN_CHAVES) {
 		borrowFromPrev(arv, node, idx);
+		free(filho_esquerdo);
+		return ;
 	}
 	free(filho_esquerdo);
 
 	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
 	if(idx != node->num_chaves && filho_direito->num_chaves >= MIN_CHAVES) {
 		borrowFromNext(arv, node, idx);
+		free(filho_direito);
+		return ;
 	}
 	free(filho_direito);
 
@@ -356,6 +425,9 @@ void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	filho_direito->num_chaves++;
 	filho_esquerdo->num_chaves--;
 
+	saveNodeToFile(arv, node);
+	saveNodeToFile(arv, filho_esquerdo);
+	saveNodeToFile(arv, filho_direito);
 	free(filho_esquerdo);
 	free(filho_direito);
 }
@@ -381,11 +453,17 @@ void borrowFromNext(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	filho_esquerdo->num_chaves++;
 	filho_direito->num_chaves--;
 
+	saveNodeToFile(arv, node);
+	saveNodeToFile(arv, filho_esquerdo);
+	saveNodeToFile(arv, filho_direito);
 	free(filho_esquerdo);
 	free(filho_direito);
 }
 
-// função que une idx com idx+1
+/**
+ * função que une idx com idx+1
+ * @param idx  um inteiro que identifica a página no disco
+ */
 void mergeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
 	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
@@ -431,6 +509,10 @@ void initNodeArvoreB(arvoreb_node_t *node) {
 	}
 }
 
+/**
+ * cria e inicializa um Nó da árvore
+ * @return precisa de free
+ */
 arvoreb_node_t *createNodeArvoreB() {
 	arvoreb_node_t *result = malloc(sizeof(arvoreb_node_t));
 	initNodeArvoreB(result);
@@ -442,22 +524,39 @@ arvoreb_node_t *createNodeArvoreB() {
    ==================================================== */
 void freeArvoreB(arvoreb_t *arv) {
 	fclose(arv->fd);
+	arv->fd = NULL;
 }
 
+/* ====================================================
+   IMPRIME A ÁRVORE
+   ==================================================== */
 void printArvoreB(arvoreb_t *arv) {
 	section("IMPRIMINDO A ÁRVORE B");
-	printf("root => %d\n", arv->root);
-	printf("num_pages => %d\n", arv->num_pages);
-	printf("empty_pages => %d\n", arv->empty_pages);
+	printf("       root => %d\n", arv->root);
+	printf("  num_pages => %d\n", arv->num_pages);
+	printf("empty_pages => ");
+	// imprimindo lista de vazios
+	page_t next_page = arv->empty_pages;
+	while(next_page != -1) {
+		printf("%d, ", next_page);
+		arvoreb_node_t *node = loadNodeFromFile(arv, next_page);
+		next_page = node->filhos[0];
+		free(node);
+	}
+	printf("FIM\n");
 	// imrpimindo nós
 	printPagesArvoreB(arv, arv->root);
-	printf("\n\n");
+	printf("/* =============================	 */\n\n");
 }
 
+/**
+ * imprime um nó da árvore recebendo a página no arquivo
+ */
 void printPagesArvoreB(arvoreb_t *arv, page_t page) {
 	if(page == -1) {
 		return ;
 	}
+	printf("\n");
 	arvoreb_node_t *node = loadNodeFromFile(arv, page);
 	page_t filhos[ORDEM];
 	// copia os filhos
@@ -475,4 +574,8 @@ void printPagesArvoreB(arvoreb_t *arv, page_t page) {
 	for(i=0; i<ORDEM; i++) {
 		printPagesArvoreB(arv, filhos[i]);
 	}
+}
+
+void deleteFileArvoreB() {
+	remove(FILENAMEARVOREB);
 }

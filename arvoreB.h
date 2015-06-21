@@ -41,20 +41,51 @@ typedef struct arvoreb_node_t {
    ==================================================== */
 void initArvoreB(arvoreb_t *arv);
 
+/**
+ * Cria a árvore B e inicializa a árvore B
+ * @return precisa de free
+ */
 arvoreb_t *createArvoreB();
 
+/**
+ * Salva a árvore B no arquivo
+ */
 void saveToFileArvoreB(arvoreb_t *arv);
 
+/**
+ * Carrega a árvore B do arquivo
+ */
 void loadArvoreBFromFile(arvoreb_t *arv);
 
+/**
+ * Salva um nó da árvore no arquivo
+ */
 void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node);
 
+/**
+ * verifica se a árvore está vazia
+ * @return     true or false
+ */
 bool isEmptyArvoreB(arvoreb_t *arv);
 
+/**
+ * Verifica se a página está vazia
+ * @param  page um inteiro que identifica a página no disco
+ * @return      true or false
+ */
 bool isPageFull(arvoreb_t *arv, page_t page);
 
+/**
+ * retorna o offset da página no arquivo de dados
+ * @param  page um inteiro que identifica a página no disco
+ */
 offset_t pageToOffset(page_t page);
 
+/**
+ * Carrega a página no disco e devolve o ponteiro do nó
+ * @param  page um inteiro que identifica a página no disco
+ * @return      precisa de free
+ */
 arvoreb_node_t *loadNodeFromFile(arvoreb_t *arv, page_t page);
 
 /* ====================================================
@@ -72,27 +103,66 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset);
 /* ====================================================
    REMOÇÃO
    ==================================================== */
+/**
+ * Remove o elemento que possui o ID infromado por parâmetro
+ * @return     true se foi encontrado
+ */
 bool removeArvoreB(arvoreb_t *arv, id_type id);
 
+/**
+ * obtem um índice maior ou igual a devida posição da chave no Nó
+ * @param  node nó que a chave será procurado
+ * @param  id   id do elemento
+ * @return      a posição do índice, sendo ela maior ou igual
+ */
 int getIndexNodeArvoreB(arvoreb_node_t *node, id_type id);
 
+/**
+ * remove um elemento do nó na árvore b
+ * @param  node nó em que será procurado o elemento
+ * @param  id   id do elemento
+ * @return      true se foi removido com sucesso
+ */
 bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id);
 
+/**
+ * remove um elemento de um nó folha
+ * @param idx  índice do elemento no nó da árvore
+ */
 void removeFromFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
+/**
+ * remove um elemento do nó da árvore que não é folha
+ * @param idx  índice do elemento no nó da árvore
+ */
 void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
+/**
+ * obtém o maior elemento da subárvore da esquerda
+ * @param  idx  índice do elemento no nó Node
+ */
 arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
+/**
+ * obtém o menor elemento da subárvore da direita
+ * @param  idx  índice do elemento no nó Node
+ */
 arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
+/**
+ * preenche o filho[idx] com algum dos filhos de Node que possui menos do que MIN_CHAVES
+ * @param idx  um inteiro que identifica a página no disco
+ */
 void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
 void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
 void borrowFromNext(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
-// função que une idx com idx+1
+/**
+ * função que une idx com idx+1
+ * @param idx  um inteiro que identifica a página no disco
+ */
 void mergeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx);
 
 /* ====================================================
@@ -100,6 +170,10 @@ void mergeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx);
    ==================================================== */
 void initNodeArvoreB(arvoreb_node_t *node);
 
+/**
+ * cria e inicializa um Nó da árvore
+ * @return precisa de free
+ */
 arvoreb_node_t *createNodeArvoreB();
 
 /* ====================================================
@@ -107,8 +181,16 @@ arvoreb_node_t *createNodeArvoreB();
    ==================================================== */
 void freeArvoreB(arvoreb_t *arv);
 
+/* ====================================================
+   IMPRIME A ÁRVORE
+   ==================================================== */
 void printArvoreB(arvoreb_t *arv);
 
+/**
+ * imprime um nó da árvore recebendo a página no arquivo
+ */
 void printPagesArvoreB(arvoreb_t *arv, page_t page);
+
+void deleteFileArvoreB();
 
 #endif //__ARVOREB_H__

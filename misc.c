@@ -12,7 +12,7 @@
 #define __MISC_C__
 #include "misc.h"
 
-// 02.06.2015
+// 21.06.2015
 
 // #define CHECK_LEAK
 
@@ -226,7 +226,7 @@ void setBufferedInput(bool enable) {
 #endif
 
 // apaga o conteudo da tela
-void clear() {
+void clearScreen() {
 	#ifdef __WIN32
 		system("cls");
 	#else

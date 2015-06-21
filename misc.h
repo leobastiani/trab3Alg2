@@ -21,7 +21,7 @@ char file_exists(char const *str); // funcao que retorna true ou false se o arqu
 int remove_directory(const char *path); // remove um diretorio não vazio por completo
 
 void setBufferedInput(bool enable); // obtem comandos do teclado sem armazenar buffer
-void clear(); // apaga o conteudo da tela
+void clearScreen(); // apaga o conteudo da tela
 void hide_cursor(); // esconde o cursor
 void show_cursor(); // mostra o cursor dps de escondido
 float timediff(bool starthere); // devolve em segundos o tempo passado de starthere = true e starthere = false
