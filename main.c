@@ -17,15 +17,13 @@ Variaveis:
 int main(int argc, char *argv[]) {
 	int opc;
 	arvoreb_t *btree;
-	FILE *reg;
 
-	reg = fopen(FILE_REG, "rb");
-	if (reg != NULL) { //arquivo de registros ja existe e deve ser carregado
+	btree = createArvoreB();
+	if (file_exists(FILE_REG) && !file_exists(FILENAMEARVOREB)) { //arquivo de registros ja existe e deve ser carregado
 		Load_reg(reg, btree);
 		fclose(reg);
 	}
 
-	btree = createArvoreB();
 	opc = 1;
 	while (opc) {
 		clear();
