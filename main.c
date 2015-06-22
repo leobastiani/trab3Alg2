@@ -1,12 +1,14 @@
 #ifndef TEST
+
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 #include "misc.h"
+#include "arvoreB.h"
+#include "main.h"
 
 /*
 Funcao main apenas pega a opcao do usuario e direciona o programa para a funcao correspondente
@@ -19,7 +21,7 @@ int main(int argc, char *argv[]) {
 	arvoreb_t *btree;
 
 	btree = createArvoreB();
-	if (file_exists(FILE_REG) && !file_exists(FILENAMEARVOREB)) { //arquivo de registros ja existe e deve ser carregado
+	if (file_exists(FILE_REG) && isEmptyArvoreB(btree)) { //arquivo de registros ja existe e deve ser carregado
 		Load_reg(reg, btree);
 		fclose(reg);
 	}
