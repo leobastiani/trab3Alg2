@@ -59,6 +59,7 @@ void loadArvoreBFromFile(arvoreb_t *arv);
 
 /**
  * Salva um nó da árvore no arquivo
+ * esta função altera o valor de node->page_num para a nova página alocada em disco
  */
 void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node);
 
