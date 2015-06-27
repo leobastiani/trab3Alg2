@@ -526,6 +526,7 @@ arvoreb_node_t *createNodeArvoreB() {
 void freeArvoreB(arvoreb_t *arv) {
 	fclose(arv->fd);
 	arv->fd = NULL;
+	free(arv);
 }
 
 /* ====================================================
