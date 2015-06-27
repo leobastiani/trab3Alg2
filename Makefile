@@ -1,5 +1,5 @@
 CC=gcc
-FLAGS=-DTEST
+FLAGS=
 CFLAGS=-c $(FLAGS)
 LDFLAGS=$(FLAGS)
 SOURCES=$(wildcard *.c)
@@ -16,6 +16,10 @@ $(EXECUTABLE): $(OBJECTS)
 
 debug: $(SOURCES)
 	$(CC) $(SOURCES) -o $(EXECUTABLE) $(LDFLAGS) -DDEBUG
+	./$(EXECUTABLE)
+
+test:  $(SOURCES)
+	$(CC) $(SOURCES) -o $(EXECUTABLE) $(LDFLAGS) -DDEBUG -DTEST
 	./$(EXECUTABLE)
 
 .c.o:

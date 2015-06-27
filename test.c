@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
 
 	puts("caso 3, inserindo mais de ORDEM elementos");
 
-	free(arv);
 	return 0;
 }
 
