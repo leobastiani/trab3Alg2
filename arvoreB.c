@@ -19,9 +19,7 @@ void initArvoreB(arvoreb_t *arv) {
 		loadArvoreBFromFile(arv);
 		return ;
 	}
-	#ifdef DEBUG
-		printf("O arquivo da árvore não existe, criando o arquivo da árvore\n");
-	#endif // DEBUG
+	debug("O arquivo da árvore não existe, criando o arquivo da árvore\n");
 	arv->fd = fopen(FILENAMEARVOREB, "w+");
 	// inicializa a árvore nessa função msmo
 	// seta árvore vazia
@@ -56,9 +54,7 @@ void saveToFileArvoreB(arvoreb_t *arv) {
  * Carrega a árvore B do arquivo
  */
 void loadArvoreBFromFile(arvoreb_t *arv) {
-	#ifdef DEBUG
-		printf("Carregando a árvore da memória\n");
-	#endif // DEBUG
+	debug("Carregando a árvore da memória\n");
 	rewind(arv->fd);
 	fread(&arv->root, sizeof(page_t), 1, arv->fd);
 	fread(&arv->num_pages, sizeof(uint), 1, arv->fd);
@@ -83,9 +79,7 @@ void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node) {
 			free(empty_node);
 		} else {
 			// cria uma nova página no arquivo
-			#ifdef DEBUG
-				printf("Criando uma página nova no disco\n");
-			#endif // DEBUG
+			debug("Criando uma página nova no disco\n");
 			node->page_num = arv->num_pages+1; // 1, 2, 3, ...
 		}
 		arv->num_pages++; // aumenta o número de páginas
@@ -169,9 +163,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset) {
 	// se a árvore está vazia
 	if(isEmptyArvoreB(arv)) {
 		// cria o primeiro nó
-		#ifdef DEBUG
-			printf("Inserindo na árvore: ID: %d => offset: %ld\n", id, offset);
-		#endif // DEBUG
+		debug("Inserindo na árvore: ID: %d => offset: %ld\n", id, offset);
 		arvoreb_node_t *node = createNodeArvoreB();
 		node->chaves[0].id = id;
 		node->chaves[0].offset = offset;
@@ -204,9 +196,7 @@ bool removeArvoreB(arvoreb_t *arv, id_type id) {
 	if(isEmptyArvoreB(arv)) {
 		return false;
 	}
-	#ifdef DEBUG
-		printf("Removendo a chave com ID: %d\n", id);
-	#endif // DEBUG
+	debug("Removendo a chave com ID: %d\n", id);
 	arvoreb_node_t *root = loadNodeFromFile(arv, arv->root);
 	bool result = removeNodeArvoreB(arv, root, id);
 	if(root->num_chaves == 0) {

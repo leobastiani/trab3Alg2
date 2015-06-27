@@ -12,7 +12,7 @@
 #define __MISC_C__
 #include "misc.h"
 
-// 21.06.2015
+// 27.06.2015
 
 // #define CHECK_LEAK
 
@@ -267,9 +267,4 @@ int printfVerticaly(char *str) {
 	}
 	printf("==================\n");
 	return strlen(str);
-}
-
-// cria uma seção para facilitar o debug da saida
-void section(char *str) {
-	printf("\n/* =============================\n   %s\n   ============================= */\n", str);
 }

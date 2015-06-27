@@ -27,6 +27,11 @@ void show_cursor(); // mostra o cursor dps de escondido
 float timediff(bool starthere); // devolve em segundos o tempo passado de starthere = true e starthere = false
 int printfVerticaly(char *str); // funcao boa para debug, imprime strings verticalmente
 void section(char *str); // cria uma seção para facilitar o debug da saida
+// cria uma seção para facilitar o debug da saida
+#define section(str, ...) printf("\n/* =============================\n"); \
+													printf("   " str "\n", ##__VA_ARGS__); \
+													printf("   ============================= */\n"); 
+
 
 // troca as funções de alocação de memória, menos no arquivo .c
 #ifndef __MISC_C__
@@ -35,5 +40,12 @@ void section(char *str); // cria uma seção para facilitar o debug da saida
 	#define calloc _calloc
 	#define free _free
 #endif
+
+// definindo a função debug que faz a msma coisa que o printf
+#ifdef DEBUG
+	#define debug(str, ...) printf(str, ##__VA_ARGS__);
+#else
+	#define debug(str, ...) ;
+#endif // DEBUG
 
 #endif
