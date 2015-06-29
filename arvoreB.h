@@ -10,7 +10,7 @@
 #define FILENAMEARVOREB "arvoreB.btree"
 
 #define ORDEM 6
-#define MIN_CHAVES ORDEM/2
+#define MIN_CHAVES (ORDEM/2 - 1)
 
 typedef uint      id_type;
 typedef long int  offset_t;

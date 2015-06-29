@@ -7,6 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <stdarg.h>
 
 // define para dizer que este é o arquivo principal
 #define __MISC_C__
@@ -267,4 +268,16 @@ int printfVerticaly(char *str) {
 	}
 	printf("==================\n");
 	return strlen(str);
+}
+
+// cria uma seção para facilitar o debug da saida
+void section(char *str, ...) {
+	printf("/* =============================\n");
+	va_list args;
+  va_start(args, str);
+	printf("   ");
+	vprintf(str, args);
+	printf("\n");
+  va_end(args);
+	printf("   ============================= */\n");
 }
