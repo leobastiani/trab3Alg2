@@ -10,29 +10,43 @@
 #include "arvoreB.h"
 
 int main(int argc, char *argv[]) {
-	puts("caso 1, inserindo e removendo apenas um elemento");
-	arvoreb_t *arv = createArvoreB();
-	printArvoreB(arv);
-	insertArvoreB(arv, 1, 2);
-	printArvoreB(arv);
-	removeArvoreB(arv, 1);
-	printArvoreB(arv);
+	arvoreb_t *arv = createArvoreB(); printArvoreB(arv);
+	
+	// inserindo muitos elementos
+	insertArvoreB(arv,  1, 23);         printArvoreB(arv);
+	insertArvoreB(arv,  2, 24);         printArvoreB(arv);
+	insertArvoreB(arv,  3, 34);         printArvoreB(arv);
+	insertArvoreB(arv,  4,  7);         printArvoreB(arv);
+	insertArvoreB(arv,  5, 34);         printArvoreB(arv);
+	insertArvoreB(arv,  6, 16);         printArvoreB(arv);
+	insertArvoreB(arv,  7, 42);         printArvoreB(arv);
+	insertArvoreB(arv,  8, 36);         printArvoreB(arv);
+	insertArvoreB(arv,  9,  1);         printArvoreB(arv);
+	insertArvoreB(arv, 10, 41);         printArvoreB(arv);
+	insertArvoreB(arv, 11, 20);         printArvoreB(arv);
+	insertArvoreB(arv, 12, 23);         printArvoreB(arv);
+	insertArvoreB(arv, 13, 29);         printArvoreB(arv);
+	insertArvoreB(arv, 14, 31);         printArvoreB(arv);
+	insertArvoreB(arv, 15, 29);         printArvoreB(arv);
+
+	// removendo
+	removeArvoreB(arv,  1);             printArvoreB(arv);
+	removeArvoreB(arv,  2);             printArvoreB(arv);
+	removeArvoreB(arv,  3);             printArvoreB(arv);
+	removeArvoreB(arv,  4);             printArvoreB(arv);
+	removeArvoreB(arv,  5);             printArvoreB(arv);
+	removeArvoreB(arv,  6);             printArvoreB(arv);
+	removeArvoreB(arv,  7);             printArvoreB(arv);
+	removeArvoreB(arv,  8);             printArvoreB(arv);
+	removeArvoreB(arv,  9);             printArvoreB(arv);
+	removeArvoreB(arv, 10);             printArvoreB(arv);
+	removeArvoreB(arv, 11);             printArvoreB(arv);
+	removeArvoreB(arv, 12);             printArvoreB(arv);
+	removeArvoreB(arv, 13);             printArvoreB(arv);
+	removeArvoreB(arv, 14);             printArvoreB(arv);
+	removeArvoreB(arv, 15);             printArvoreB(arv);
+
 	freeArvoreB(arv);
-	deleteFileArvoreB();
-
-	puts("caso 2, inserindo dois elementos e removendo um");
-	arv = createArvoreB();
-	printArvoreB(arv);
-	insertArvoreB(arv, 1, 2);
-	insertArvoreB(arv, 2, 3);
-	printArvoreB(arv);
-	removeArvoreB(arv, 2);
-	printArvoreB(arv);
-	freeArvoreB(arv);
-	deleteFileArvoreB();
-
-	puts("caso 3, inserindo mais de ORDEM elementos");
-
 	return 0;
 }
 
