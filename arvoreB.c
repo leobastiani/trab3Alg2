@@ -145,45 +145,344 @@ arvoreb_node_t *loadNodeFromFile(arvoreb_t *arv, page_t page) {
 /* ====================================================
    BUSCA
    ==================================================== */
-offset_t searchArvoreB(arvoreb_t *arv, id_type id) {
-	if(isEmptyArvoreB(arv)) {
-		return -1;
-	}
-	return _searchArvoreB(arv->root, id);
+/**
+* Função que realiza a busca binária em uma página
+* @param page é a página em que é feita a bsca, id é o ID buscado, offset_page é um ponteiro para a página
+*        em que o ID deveria estar, ideal_pos é um ponteiro para a posição em que o ID deveria estar na página identificada
+*        por offset_page.
+* @return a função retorna true se o elemento foi encontrado na página e false, caso contrário.
+*/
+bool b_search(arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_pos)
+{
+    int left, right, middle;
+    left = -1;
+    right = page->num_chaves;
+    *offset_page = -1;
+
+    while(left < right-1)
+    {
+        middle = (left + right)/2;
+
+        if (page->chaves[middle].id < id)
+        {
+            *offset_page = page->filhos[middle+1];
+            *ideal_pos = middle;
+            left = middle;
+        }
+
+        else
+        {
+
+            if (page->chaves[middle].id > id)
+            {
+                *offset_page = page->filhos[middle];
+                *ideal_pos = middle+1;
+                right = middle;
+            }
+
+            else
+            {
+                if (page->chaves[middle].id == id)
+                {
+                    *ideal_pos = middle;
+                    return true;
+                }
+
+            }
+        }
+
+    }
+
+    return false;
 }
 
-offset_t _searchArvoreB(page_t node, id_type id) {
-	return -1;
+
+/**
+* Função que realiza a busca por um ID na árvore B
+* @param id é o ID buscado
+* @return a função retorna o byte offset do registro do arquivo de dados identificado por id
+*/
+offset_t searchArvoreB(arvoreb_t *arv, id_type id)
+{
+    page_t offset;    	                            //Byte offset a ser usado na busca binária
+    bool busca = false;                             //Variável de controle da busca
+    arvoreb_node_t *page = createNodeArvoreB();
+    int i;
+
+    //Posisionamento no arquivo de acordo com o byte offset da raiz
+    fseek(arv->fd, pageToOffset(arv->root), SEEK_SET);
+
+    //Lendo página raiz
+    fread(page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+    //Enquanto a busca não for bem sucedida
+    while(!busca && !page->is_folha)
+    {
+        busca = b_search(page, id, &offset, &i);
+
+        if (!busca)
+        {
+            fseek(arv->fd, pageToOffset(offset), SEEK_SET);
+            free(page);
+            page = createNodeArvoreB();
+            fread(page, sizeof(arvoreb_node_t), 1, arv->fd);
+        }
+    }
+
+    //Se o elemento foi encontrado, offset é igual ao rrn do registro correspondente
+    if (busca)
+        return page->chaves[i].offset;
+
+    else
+        return -1;
 }
 
 /* ====================================================
    INSERÇÃO
    ==================================================== */
-bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset) {
-	// se a árvore está vazia
-	if(isEmptyArvoreB(arv)) {
-		// cria o primeiro nó
-		debug("Inserindo na árvore: ID: %d => offset: %ld\n", id, offset);
-		arvoreb_node_t *node = createNodeArvoreB();
-		node->chaves[0].id = id;
-		node->chaves[0].offset = offset;
-		node->num_chaves = 1;
-		node->is_folha = true;
-		saveNodeToFile(arv, node);
-		// atualiza a raiz
-		arv->root = node->page_num;
-		saveToFileArvoreB(arv);
-		free(node);
-		return true;
-	}
-	// se a raiz está cheia
-	if(isPageFull(arv, arv->root)) {
-		return true;
-	}
-	// se o nó não está cheio, insere nos nós de baixo
-	// return insertNodeNonFull(arv->root, id, offset);
-	return false; // me remova!
+/**
+* Função que insere uma nova chave na árvore B
+* @param id e offset são os campos da nova chave a ser inserida
+* @return true, caso a inserção seja bem sucedida e false, caso contrário
+*/
+bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
+{
+    //Elemento existente
+    if(searchArvoreB(arv, id) == -1)
+        return false;
+
+    arvoreb_node_t *new_page;
+    page_t pai;
+
+    // Ávore vazia
+    if (arv->root == -1)
+    {
+        //Alocando espaço para raiz
+        new_page = createNodeArvoreB();
+
+        //Preencehndo raiz
+        new_page->chaves[0].id = id;
+        new_page->chaves[0].offset = offset;
+        new_page->num_chaves = 1;
+        new_page->is_folha = true;
+
+        saveToFileArvoreB(arv);
+        saveNodeToFile(arv, new_page);
+
+        free(new_page);
+
+        return true;
+    }
+
+   //Caso a árvore não esteja vazia
+    else
+    {
+        //Lendo a raiz
+        new_page = createNodeArvoreB();
+
+        fseek(arv->fd, pageToOffset(arv->root), SEEK_SET);
+        fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+        //Caso a raiz esteja cheia
+        if (new_page->num_chaves == ORDEM-1)
+        {
+            //Criando nova raiz
+           free(new_page);
+           new_page = createNodeArvoreB();
+           new_page->is_folha = false;
+           arv->num_pages ++;
+           new_page->page_num = arv->num_pages;
+           pai = new_page->page_num;
+
+           //Tornando antiga raiz filha da nova raiz
+            new_page->filhos[0] = arv->root;
+
+           saveNodeToFile(arv, new_page);
+           free(new_page);
+
+           new_page = createNodeArvoreB();
+           fseek(arv->fd, pageToOffset(arv->root), SEEK_SET);
+           fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+
+            //Realizando o split na antiga raiz e promovendo um elemento para a nova raiz
+            split(arv, 0, pai, new_page);
+
+            //Qual dos dois filhos da nova raiz irá receber a nova chave
+            int i = 0;
+            if (new_page->chaves[0].id < id)
+                i++;
+
+            //Mudando a raiz da árvore
+            arv->root = new_page->page_num;
+
+            saveNodeToFile(arv, new_page);
+            saveToFileArvoreB(arv);
+
+            fseek(arv->fd, pageToOffset(new_page->filhos[i]), SEEK_SET);
+            free(new_page);
+            new_page = createNodeArvoreB();
+            fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+            insertNonFull(arv, id, offset, new_page);
+
+            return true;
+        }
+
+        //Caso a raiz não esteja cheia
+        else
+        {
+            insertion(arv, id, offset, new_page);
+            return true;
+        }
+
+    }
 }
+
+/**
+* Função que insere uma nova chave em uma página que não está cheia
+* @param id e off são os campos da nova chave, page é um ponteiro para a página na qual a chave será inserida
+*/
+void insertion(arvoreb_t *arv, id_type id, offset_t off, arvoreb_node_t *page)
+{
+
+    int i = page->num_chaves-1;
+
+    page_t offset;
+    int ideal_pos;
+    arvoreb_node_t *new_page;
+
+    //Caso page seja uma folha
+    if (page->is_folha == true)
+    {
+        //Encontrando a posição da chave ao mesmo tempo em que se move as posteriores para a direita, alocando espaço
+        while (i >= 0 && page->chaves[i].id > id)
+        {
+            page->chaves[i+1].id =  page->chaves[i].id;
+            page->chaves[i+1].offset =  page->chaves[i].offset;
+            i--;
+        }
+
+        //Inserindo a nova chave
+        page->chaves[i+1].id = id;
+        page->chaves[i+1].offset = offset;
+        page->num_chaves ++;
+
+        saveNodeToFile(arv, page);
+    }
+
+    //Caso page não seja uma folha
+    else
+    {
+        //Buscando o nó filho que ira receber a nova chave
+        b_search(page, id, &offset, &ideal_pos);
+
+        new_page = createNodeArvoreB();
+        fseek(arv->fd, pageToOffset(offset), SEEK_SET);
+        fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+        //Verificando se o nó filho está cheio
+        if (new_page->num_chaves == ORDEM-1)
+        {
+            //se o filho está cheio, ele sofre plit
+            split(arv, ideal_pos, page->page_num, new_page);
+
+            //Relendo a página depois do split
+            fseek(arv->fd, pageToOffset(page->page_num), SEEK_SET);
+            free (page);
+            page = createNodeArvoreB();
+            fread(page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+            //Verificando qual das duas páginas resultantes do split irá receber a chave
+            if (page->chaves[ideal_pos].id < id)
+                ideal_pos++;
+        }
+
+        free(new_page);
+        new_page = createNodeArvoreB();
+        fseek(arv->fd, pageToOffset(page->filhos[ideal_pos]), SEEK_SET);
+        fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+        insertion(arv, id, off, new_page);
+    }
+}
+
+/**
+* Função auxiliar que realiza o split de um nó
+* @param filho é o nó que sofrerá o split, pai é o nó pai deste
+*/
+void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
+{
+    int j;
+    int k = ORDEM/2;
+    arvoreb_node_t *father;
+    page_t num_aux;
+
+    //Criando uma nova página que vai receber os k-1 elementos de filho
+    arvoreb_node_t *new_page = createNodeArvoreB();
+    arv->num_pages ++;
+    new_page->page_num = arv->num_pages;
+    new_page->is_folha = filho->is_folha;
+    new_page->num_chaves = k -1;
+
+    //Copiando os elementos
+    for (j = 0; j < k -1; j++)
+    {
+        new_page->chaves[j].id = filho->chaves[j+k].id;
+        new_page->chaves[j].offset = filho->chaves[j+k].offset;
+        filho->chaves[j+k].id = 0;
+        filho->chaves[j+k].offset = 0;
+    }
+
+    //Copiando o último filho de um nó a outro
+    if (filho->is_folha == false)
+    {
+        for (j = 0; j < k; j++)
+            new_page->filhos[j] = filho->filhos[j+k];
+            filho->filhos[j+k] = -1;
+    }
+
+    //Decrementando o número de chaves de filho
+    filho->num_chaves = k - 1;
+
+    saveNodeToFile(arv, new_page);
+    saveNodeToFile(arv, filho);
+
+    num_aux = new_page->page_num;
+
+    free(new_page);
+
+
+    //Criando espaço no nó pai para o nó criado
+    father = createNodeArvoreB();
+    fseek(arv->fd, pageToOffset(pai), SEEK_SET);
+    fread(&father, sizeof(arvoreb_node_t), 1, arv->fd);
+
+    for (j = father->num_chaves; j >= i+1; j--)
+        father->filhos[j+1] = father->filhos[j];
+
+    //Referenciando o novo filho no nó pai
+    father->filhos[i+1] = num_aux;
+
+    //Encontrando espaço para a chave promovida
+    for (j = father->num_chaves-1; j >= i; j--)
+    {
+        father->chaves[j+1].id = father->chaves[j].id;
+        father->chaves[j+1].offset = father->chaves[j].offset;
+    }
+
+    father->chaves[i].id = filho->chaves[k - 1].id;
+    father->chaves[i].offset = filho->chaves[k - 1].offset;
+    filho->chaves[k - 1].id = 0;
+    filho->chaves[k - 1].offset = 0;
+
+    //Incrementando o número de chaves no nó pai
+    father->num_chaves = father->num_chaves + 1;
+
+    saveNodeToFile(arv, father);
+    free(father);
+    free(filho);
+}
+
 
 /* ====================================================
    REMOÇÃO
