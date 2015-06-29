@@ -93,13 +93,42 @@ arvoreb_node_t *loadNodeFromFile(arvoreb_t *arv, page_t page);
    BUSCA
    ==================================================== */
 offset_t searchArvoreB(arvoreb_t *arv, id_type id);
+/**
+* Função que realiza a busca por um ID na árvore B
+* @param id é o ID buscado
+* @return a função retorna o byte offset do registro do arquivo de dados identificado por id
+*/
 
-offset_t _searchArvoreB(page_t node, id_type id);
+bool b_search(arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_pos);
+/**
+* Função que realiza a busca binária em uma página
+* @param page é a página em que é feita a bsca, id é o ID buscado, offset_page é um ponteiro para a página
+*        em que o ID deveria estar, ideal_pos é um ponteiro para a posição em que o ID deveria estar na página identificada
+*        por offset_page.
+* @return a função retorna true se o elemento foi encontrado na página e false, caso contrário.
+*/
 
 /* ====================================================
    INSERÇÃO
    ==================================================== */
 bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset);
+/**
+* Função geral que insere uma nova chave na árvore B
+* @param id e offset são os campos da nova chave a ser inserida
+* @return true, caso a inserção seja bem sucedida e false, caso contrário
+*/
+
+void insertion(arvoreb_t *arv, id_type id, offset_t off, arvoreb_node_t *page);
+/**
+* Função que insere uma nova chave em uma página que não está cheia
+* @param id e off são os campos da nova chave, page é um ponteiro para a página na qual a chave será inserida
+*/
+
+void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho);
+/**
+* Função auxiliar que realiza o split de um nó
+* @param filho é o nó que sofrerá o split, pai é o nó pai deste
+*/
 
 /* ====================================================
    REMOÇÃO
