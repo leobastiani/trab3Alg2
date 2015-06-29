@@ -58,6 +58,13 @@ void saveToFileArvoreB(arvoreb_t *arv);
 void loadArvoreBFromFile(arvoreb_t *arv);
 
 /**
+ * Carrega o filho de node do disco para a memória
+ * @param  filho idx do filho no nó
+ * @return       precisa de fre
+ */
+arvoreb_node_t *loadFilhoFromFile(arvoreb_t *arv, arvoreb_node_t *node, int filho);
+
+/**
  * Salva um nó da árvore no arquivo
  * esta função altera o valor de node->page_num para a nova página alocada em disco
  */

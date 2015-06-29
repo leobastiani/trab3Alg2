@@ -136,10 +136,22 @@ offset_t pageToOffset(page_t page) {
  * @return      precisa de free
  */
 arvoreb_node_t *loadNodeFromFile(arvoreb_t *arv, page_t page) {
+	if(page == -1) {
+		return NULL;
+	}
 	arvoreb_node_t *result = createNodeArvoreB();
 	fseek(arv->fd, pageToOffset(page), SEEK_SET);
 	fread(result, sizeof(arvoreb_node_t), 1, arv->fd);
 	return result;
+}
+
+/**
+ * Carrega o filho de node do disco para a memória
+ * @param  filho idx do filho no nó
+ * @return       precisa de fre
+ */
+arvoreb_node_t *loadFilhoFromFile(arvoreb_t *arv, arvoreb_node_t *node, int filho) {
+	return loadNodeFromFile(arv, node->filhos[filho]);
 }
 
 /* ====================================================
@@ -550,7 +562,7 @@ bool removeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, id_type id) {
 	}
 	// está em algum dos filhos
 	bool estaNoUltimoFilho = (idx == node->num_chaves);
-	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx);
 	if(filho_esquerdo->num_chaves < MIN_CHAVES) {
 		// se o filho da chave que encontramos não possui o mínimo de chaves, vamos preencher este filhos
 		fillNodeArvoreB(arv, node, idx);
@@ -597,7 +609,7 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	id_type id = node->chaves[idx].id;
 
 	// para o filho esquerdo
-	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx);
 	bool runExit = false;
 	if(filho_esquerdo->num_chaves >= MIN_CHAVES) {
 		runExit = true;
@@ -611,7 +623,7 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	}
 
 	// para o filho direito
-	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+	arvoreb_node_t *filho_direito = loadFilhoFromFile(arv, node, idx+1);
 	if(filho_direito->num_chaves >= MIN_CHAVES) {
 		runExit = true;
 		arvoreb_elem_t succ = getSucc(arv, node, idx);
@@ -625,7 +637,7 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 
 	// se os filhos da direita e da esquerda possui menos de MIN_CHAVES
 	mergeNodeArvoreB(arv, node, idx);
-	filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
+	filho_esquerdo = loadFilhoFromFile(arv, node, idx);
 	removeNodeArvoreB(arv, filho_esquerdo, id);
 	free(filho_esquerdo);
 }
@@ -667,7 +679,7 @@ arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
  * @param idx  um inteiro que identifica a página no disco
  */
 void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx-1]);
+	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx-1);
 	if(idx != 0 && filho_esquerdo->num_chaves >= MIN_CHAVES) {
 		borrowFromPrev(arv, node, idx);
 		free(filho_esquerdo);
@@ -675,7 +687,7 @@ void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 	}
 	free(filho_esquerdo);
 
-	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+	arvoreb_node_t *filho_direito = loadFilhoFromFile(arv, node, idx+1);
 	if(idx != node->num_chaves && filho_direito->num_chaves >= MIN_CHAVES) {
 		borrowFromNext(arv, node, idx);
 		free(filho_direito);
@@ -694,8 +706,8 @@ void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 }
 
 void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx]);
-	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx-1]);
+	arvoreb_node_t *filho_direito = loadFilhoFromFile(arv, node, idx);
+	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx-1);
 
 	int i;
 	for(i=filho_direito->num_chaves-1; i>=0; i--) {
@@ -723,8 +735,8 @@ void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 }
 
 void borrowFromNext(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
-	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx);
+	arvoreb_node_t *filho_direito = loadFilhoFromFile(arv, node, idx+1);
 
 	filho_esquerdo->chaves[filho_esquerdo->num_chaves] = node->chaves[idx];
 	if(!filho_esquerdo->is_folha) {
@@ -755,8 +767,8 @@ void borrowFromNext(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
  * @param idx  um inteiro que identifica a página no disco
  */
 void mergeNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	arvoreb_node_t *filho_esquerdo = loadNodeFromFile(arv, node->filhos[idx]);
-	arvoreb_node_t *filho_direito = loadNodeFromFile(arv, node->filhos[idx+1]);
+	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx);
+	arvoreb_node_t *filho_direito = loadFilhoFromFile(arv, node, idx+1);
 
 	filho_esquerdo->chaves[MIN_CHAVES-1] = node->chaves[idx];
 	int i;
