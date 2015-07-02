@@ -96,7 +96,6 @@ void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node) {
 			arvoreb_node_t *nova_raiz = loadNodeFromFile(arv, arv->root);
 			arv->root = nova_raiz->filhos[0];
 			debug("Removeu a raiz! Nova raiz: %d\n", arv->root);
-			// exit(0);
 			free(nova_raiz);
 		}
 		saveToFileArvoreB(arv);
