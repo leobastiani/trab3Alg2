@@ -230,11 +230,8 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
     arvoreb_node_t *page = createNodeArvoreB();
     int i;
 
-    //Posisionamento no arquivo de acordo com o byte offset da raiz
-    fseek(arv->fd, pageToOffset(arv->root), SEEK_SET);
-
     //Lendo página raiz
-    fread(page, sizeof(arvoreb_node_t), 1, arv->fd);
+    page = loadNodeFromFile(arv, arv->root);
 
     //Enquanto a busca não for bem sucedida
     while(!busca)
@@ -243,10 +240,8 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
 
         if (!busca && offset != -1)
         {
-            fseek(arv->fd, pageToOffset(offset), SEEK_SET);
             free(page);
-            page = createNodeArvoreB();
-            fread(page, sizeof(arvoreb_node_t), 1, arv->fd);
+            page = loadNodeFromFile(arv, offset);
         }
         else
             break;
@@ -301,10 +296,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
     else
     {
         //Lendo a raiz
-        new_page = createNodeArvoreB();
-
-        fseek(arv->fd, pageToOffset(arv->root), SEEK_SET);
-        fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+        new_page = loadNodeFromFile(arv, arv->root);
 
         //Caso a raiz esteja cheia
         if (new_page->num_chaves == ORDEM-1)
@@ -339,9 +331,9 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
             saveNodeToFile(arv, new_page);
 
             free(new_page);
-            new_page = createNodeArvoreB();
-            fseek(arv->fd, pageToOffset(arv->root), SEEK_SET);
-            fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+            //Lendo a nova raiz
+            new_page = loadNodeFromFile(arv, arv->root);
 
             //Qual dos dois filhos da nova raiz irá receber a nova chave
             int i = 0;
@@ -408,9 +400,7 @@ void insertion(arvoreb_t *arv, id_type id, offset_t off, arvoreb_node_t *page)
         //Buscando o nó filho que ira receber a nova chave
         b_search(page, id, &offset, &ideal_pos);
 
-        new_page = createNodeArvoreB();
-        fseek(arv->fd, pageToOffset(offset), SEEK_SET);
-        fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+        new_page = loadNodeFromFile(arv, offset);
 
         //Verificando se o nó filho está cheio
         if (new_page->num_chaves == ORDEM-1)
@@ -434,9 +424,8 @@ void insertion(arvoreb_t *arv, id_type id, offset_t off, arvoreb_node_t *page)
 
         saveNodeToFile(arv, new_page);
         free(new_page);
-        new_page = createNodeArvoreB();
-        fseek(arv->fd, pageToOffset(page->filhos[ideal_pos]), SEEK_SET);
-        fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+        new_page = loadNodeFromFile(arv, page->filhos[ideal_pos]);
 
         insertion(arv, id, off, new_page);
     }
@@ -489,9 +478,7 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
 
 
     //Criando espaço no nó pai para o nó criado
-    father = createNodeArvoreB();
-    fseek(arv->fd, pageToOffset(pai), SEEK_SET);
-    fread(&father, sizeof(arvoreb_node_t), 1, arv->fd);
+    father = loadNodeFromFile(arv, pai);
 
     for (j = father->num_chaves; j >= i+1; j--)
         father->filhos[j+1] = father->filhos[j];
