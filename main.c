@@ -22,13 +22,15 @@ int main(int argc, char *argv[]) {
 
 	btree = createArvoreB();
 	if (file_exists(FILE_REG) && isEmptyArvoreB(btree)) { //arquivo de registros ja existe e deve ser carregado
+		FILE *reg;
+		reg = fopen(FILE_REG, "r");
 		Load_reg(reg, btree);
 		fclose(reg);
 	}
 
 	opc = 1;
 	while (opc) {
-		clear();
+		clearScreen();
 		main_menu();
 		scanf("%d", &opc);
 		printf("==========================================================\n");
@@ -47,12 +49,12 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 4:
-				clear();
+				clearScreen();
 				printArvoreB(btree);
 				break;
 
 			case 5:
-				clear();
+				clearScreen();
 				printf("Fechando o programa...\n");
 				freeArvoreB(btree);
 				opc = 0;
