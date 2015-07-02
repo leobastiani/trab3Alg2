@@ -1,5 +1,5 @@
 CC=gcc
-FLAGS=
+FLAGS=-g
 CFLAGS=-c $(FLAGS)
 LDFLAGS=$(FLAGS)
 SOURCES=$(wildcard *.c)

@@ -30,6 +30,7 @@
   Reference: CLRS3 - Chapter 18 - (499-502)
   It is advised to read the material in CLRS before taking a look at the code. */
  
+#include <cstdio>
 #include <iostream>
 using namespace std;
  
@@ -101,6 +102,8 @@ public:
     // A function to merge idx-th child of the node with (idx+1)th child of
     // the node
     void merge(int idx);
+
+    void print();
  
     // Make BTree friend of this so that we can access private members of
     // this class in BTree functions
@@ -136,7 +139,8 @@ public:
  
     // The main function that removes a new key in thie B-Tree
     void remove(int k);
- 
+
+    void print(); 
 };
  
 BTreeNode::BTreeNode(int t1, bool leaf1)
@@ -167,6 +171,7 @@ int BTreeNode::findKey(int k)
 // A function to remove the key k from the sub-tree rooted with this node
 void BTreeNode::remove(int k)
 {
+    printf("Removendo da pagina %p\n", this);
     int idx = findKey(k);
  
     // The key to be removed is present in this node
@@ -194,6 +199,7 @@ void BTreeNode::remove(int k)
         // The flag indicates whether the key is present in the sub-tree rooted
         // with the last child of this node
         bool flag = ( (idx==n)? true : false );
+        printf("IDX: %d, Chave: %d, num_chaves: %d\n", idx, keys[idx], n);
  
         // If the child where the key is supposed to exist has less that t keys,
         // we fill that child
@@ -203,10 +209,15 @@ void BTreeNode::remove(int k)
         // If the last child has been merged, it must have merged with the previous
         // child and so we recurse on the (idx-1)th child. Else, we recurse on the
         // (idx)th child which now has atleast t keys
-        if (flag && idx > n)
-            C[idx-1]->remove(k);
-        else
-            C[idx]->remove(k);
+        BTreeNode *next_page;
+        if (flag && idx > n) {
+            next_page = C[idx-1];
+        }
+        else {
+            next_page = C[idx];
+        }
+        printf("Próxima página: %p\n", next_page);
+        next_page->remove(k);
     }
     return;
 }
@@ -214,7 +225,7 @@ void BTreeNode::remove(int k)
 // A function to remove the idx-th key from this node - which is a leaf node
 void BTreeNode::removeFromLeaf (int idx)
 {
- 
+    printf("Removendo a Chave de um nó folha %p: %d\n", this, keys[idx]);
     // Move all the keys after the idx-th pos one place backward
     for (int i=idx+1; i<n; ++i)
         keys[i-1] = keys[i];
@@ -228,8 +239,8 @@ void BTreeNode::removeFromLeaf (int idx)
 // A function to remove the idx-th key from this node - which is a non-leaf node
 void BTreeNode::removeFromNonLeaf(int idx)
 {
- 
     int k = keys[idx];
+    cout << "Removendo de um nao folha, chave: " << k << endl;
  
     // If the child that precedes k (C[idx]) has atleast t keys,
     // find the predecessor 'pred' of k in the subtree rooted at
@@ -269,6 +280,7 @@ void BTreeNode::removeFromNonLeaf(int idx)
 // A function to get predecessor of keys[idx]
 int BTreeNode::getPred(int idx)
 {
+    cout << "getPred" << endl;
     // Keep moving to the right most node until we reach a leaf
     BTreeNode *cur=C[idx];
     while (!cur->leaf)
@@ -280,6 +292,7 @@ int BTreeNode::getPred(int idx)
  
 int BTreeNode::getSucc(int idx)
 {
+    cout << "getSucc" << endl;
  
     // Keep moving the left most node starting from C[idx+1] until we reach a leaf
     BTreeNode *cur = C[idx+1];
@@ -293,7 +306,7 @@ int BTreeNode::getSucc(int idx)
 // A function to fill child C[idx] which has less than t-1 keys
 void BTreeNode::fill(int idx)
 {
- 
+    printf("fill de %p\n", this);
     // If the previous child(C[idx-1]) has more than t-1 keys, borrow a key
     // from that child
     if (idx!=0 && C[idx-1]->n>=t)
@@ -321,6 +334,7 @@ void BTreeNode::fill(int idx)
 // into C[idx]
 void BTreeNode::borrowFromPrev(int idx)
 {
+    printf("borrowFromPrev %%p: %p de %p e %p\n", this, C[idx], C[idx-1]);
  
     BTreeNode *child=C[idx];
     BTreeNode *sibling=C[idx-1];
@@ -361,6 +375,7 @@ void BTreeNode::borrowFromPrev(int idx)
 // it in C[idx]
 void BTreeNode::borrowFromNext(int idx)
 {
+    printf("borrowFromNext %%p: %p de %p e %p\n", this, C[idx], C[idx+1]);
  
     BTreeNode *child=C[idx];
     BTreeNode *sibling=C[idx+1];
@@ -399,6 +414,7 @@ void BTreeNode::borrowFromNext(int idx)
 // C[idx+1] is freed after merging
 void BTreeNode::merge(int idx)
 {
+    printf("Merging %p e %p\n", C[idx], C[idx+1]);
     BTreeNode *child = C[idx];
     BTreeNode *sibling = C[idx+1];
  
@@ -607,6 +623,7 @@ BTreeNode *BTreeNode::search(int k)
  
 void BTree::remove(int k)
 {
+    cout << "\n\nRemovendo: " << k << endl;
     if (!root)
     {
         cout << "The tree is empty\n";
@@ -631,15 +648,46 @@ void BTree::remove(int k)
     }
     return;
 }
+
+void BTree::print() {
+    cout << " ======================================================== \n" << endl;
+    cout << "Imprimindo a Arvore B" << endl;
+    cout << "\n ======================================================== \n" << endl;
+    cout << "t = " << t << endl;
+    if(!root) {
+        return ;
+    }
+    root->print();
+}
+
+void BTreeNode::print() {
+    if(this == NULL) {
+        return ;
+    }
+    printf("\nPAGINA: %p\n", this);
+    cout << "NUM_CHAVES: " << n << endl;
+    if(leaf) {
+        cout << "É FOLHA!" << endl;
+    } else {
+        cout <<  "nao é folha" << endl;
+    }
+    printf("FILHO ESQUERDO: %p\n", C[0]);
+    for(int i=0; i<n; i++) {
+        printf("\t\tChave: %-2d | FILHO: %p\n", keys[i], C[i+1]);
+    }
+    for(int i=0; i<n+1; i++) {
+        C[i]->print();
+    }
+}
  
 // Driver program to test above functions
 int main()
 {
     BTree t(3); // A B-Tree with minium degree 3
  
-    t.insert(1);
-    t.insert(3);
-    t.insert(7);
+    t.insert( 1);
+    t.insert( 3);
+    t.insert( 7);
     t.insert(10);
     t.insert(11);
     t.insert(13);
@@ -652,48 +700,23 @@ int main()
     t.insert(25);
     t.insert(26);
     t.insert(21);
-    t.insert(4);
-    t.insert(5);
+    t.insert( 4);
+    t.insert( 5);
     t.insert(20);
     t.insert(22);
-    t.insert(2);
+    t.insert( 2);
     t.insert(17);
     t.insert(12);
-    t.insert(6);
+    t.insert( 6);
+
+    t.print();
  
-    cout << "Traversal of tree constructed is\n";
-    t.traverse();
-    cout << endl;
- 
-    t.remove(6);
-    cout << "Traversal of tree after removing 6\n";
-    t.traverse();
-    cout << endl;
- 
-    t.remove(13);
-    cout << "Traversal of tree after removing 13\n";
-    t.traverse();
-    cout << endl;
- 
-    t.remove(7);
-    cout << "Traversal of tree after removing 7\n";
-    t.traverse();
-    cout << endl;
- 
-    t.remove(4);
-    cout << "Traversal of tree after removing 4\n";
-    t.traverse();
-    cout << endl;
- 
-    t.remove(2);
-    cout << "Traversal of tree after removing 2\n";
-    t.traverse();
-    cout << endl;
- 
-    t.remove(16);
-    cout << "Traversal of tree after removing 16\n";
-    t.traverse();
-    cout << endl;
- 
+    t.remove(19);  t.print();
+    t.remove( 6);  t.print();
+    t.remove(13);  t.print();
+    t.remove( 7);  t.print();
+    t.remove( 4);  t.print();
+    t.remove( 2);  t.print();
+    t.remove(16);  t.print();
     return 0;
 }
