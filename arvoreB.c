@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include "arvoreB.h"
@@ -512,13 +513,19 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
  * @return     true se foi encontrado
  */
 bool removeArvoreB(arvoreb_t *arv, id_type id) {
+	file_log("Execucao de operacao de REMOCAO de %d.\n", id);
 	if(isEmptyArvoreB(arv)) {
+		file_log("Chave %d não cadastrada\n", id);
 		return false;
 	}
-	debug("Removendo a chave com ID: %d\n", id);
 	arvoreb_node_t *root = loadNodeFromFile(arv, arv->root);
 	bool result = removeNodeArvoreB(arv, root, id);
 	free(root);
+	if(result == false) {
+		file_log("Chave %d não cadastrada\n", id);
+	} else {
+		file_log("Chave %d removida com sucesso\n", id);
+	}
 	return result;
 }
 
@@ -664,6 +671,7 @@ void removeFromNonFolha(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
  * @param  idx  índice do elemento no nó Node
  */
 arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	file_log("Chave %d rebaixada\n", node->chaves[idx].id);
 	arvoreb_elem_t result;
 	page_t next_page = node->filhos[idx];
 	while(next_page != -1) {
@@ -672,6 +680,7 @@ arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 		result = cur->chaves[cur->num_chaves-1];
 		free(cur);
 	}
+	file_log("Chave %d promovida\n", result.id);
 	return result;
 }
 
@@ -680,6 +689,7 @@ arvoreb_elem_t getPred(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
  * @param  idx  índice do elemento no nó Node
  */
 arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
+	file_log("Chave %d rebaixada\n", node->chaves[idx].id);
 	arvoreb_elem_t result;
 	page_t next_page = node->filhos[idx+1];
 	while(next_page != -1) {
@@ -688,6 +698,7 @@ arvoreb_elem_t getSucc(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 		result = cur->chaves[0];
 		free(cur);
 	}
+	file_log("Chave %d promovida\n", result.id);
 	return result;
 }
 
@@ -727,7 +738,8 @@ void fillNodeArvoreB(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 }
 
 void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	debug("borrowFromPrev da página %d com pg: %d e pg: %d\n", node->page_num, node->filhos[idx], node->filhos[idx-1]);
+	// debug("borrowFromPrev da página %d com pg: %d e pg: %d\n", node->page_num, node->filhos[idx], node->filhos[idx-1]);
+	file_log("Redistribuicao de chaves - entre as páginas irmas %d e %d\n", node->filhos[idx], node->filhos[idx-1]);
 	arvoreb_node_t *filho_direito = loadFilhoFromFile(arv, node, idx);
 	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx-1);
 
@@ -757,7 +769,8 @@ void borrowFromPrev(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
 }
 
 void borrowFromNext(arvoreb_t *arv, arvoreb_node_t *node, int idx) {
-	debug("borrowFromNext da página %d com pg: %d e pg: %d\n", node->page_num, node->filhos[idx], node->filhos[idx+1]);
+	// debug("borrowFromNext da página %d com pg: %d e pg: %d\n", node->page_num, node->filhos[idx], node->filhos[idx+1]);
+	file_log("Redistribuicao de chaves - entre as páginas irmas %d e %d\n", node->filhos[idx], node->filhos[idx+1]);
 	arvoreb_node_t *filho_esquerdo = loadFilhoFromFile(arv, node, idx);
 	arvoreb_node_t *filho_direito = loadFilhoFromFile(arv, node, idx+1);
 
@@ -903,4 +916,22 @@ void printPagesArvoreB(arvoreb_t *arv, page_t page) {
 
 void deleteFileArvoreB() {
 	remove(FILENAMEARVOREB);
+}
+
+/**
+ * Use-a como se fosse dar um printf na tela
+ * já salva no arquivo automaticamente
+ * se DEBUG está ativado, imprime na tela também
+ */
+void file_log(char *str, ...) {
+	debug("ARQUIVO LOG: ");
+	FILE *fd = _fopen(FILENAMELOG, "a");
+	va_list args;
+  va_start(args, str);
+	vfprintf(fd, str, args);
+	#ifdef DEBUG
+		vfprintf(stdout, str, args);
+	#endif // DEBUG
+  va_end(args);
+	fclose(fd);
 }

@@ -8,6 +8,7 @@
 #include <string.h>
 #include <ctype.h>
 #define FILENAMEARVOREB "arvoreB.btree"
+#define FILENAMELOG     "log_lbastiani.txt"
 
 #define ORDEM 6
 #define MIN_CHAVES (ORDEM/2 - 1)
@@ -229,5 +230,12 @@ void printArvoreB(arvoreb_t *arv);
 void printPagesArvoreB(arvoreb_t *arv, page_t page);
 
 void deleteFileArvoreB();
+
+/**
+ * Use-a como se fosse dar um printf na tela
+ * já salva no arquivo automaticamente
+ * se DEBUG está ativado, imprime na tela também
+ */
+void file_log(char *str, ...);
 
 #endif //__ARVOREB_H__

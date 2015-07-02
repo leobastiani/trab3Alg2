@@ -274,7 +274,7 @@ int printfVerticaly(char *str) {
 void section(char *str, ...) {
 	printf("/* =============================\n");
 	va_list args;
-  va_start(args, str);
+	va_start(args, str);
 	printf("   ");
 	vprintf(str, args);
 	printf("\n");
