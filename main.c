@@ -7,7 +7,6 @@
 #include <string.h>
 #include <ctype.h>
 #include "misc.h"
-#include "arvoreB.h"
 #include "main.h"
 
 /*
@@ -107,6 +106,7 @@ void Insere_usuario (arvoreb_t *btree) {
 
 	printf("Digite a id do usuario: ");
 	scanf("%d", &id);
+	getc(stdin);
 	if (searchArvoreB(btree, id) >= 0) { //Registro com mesmo nome ja existe
 		printf("Usuario ja existente.\n");
 		sleep(2);
@@ -115,7 +115,6 @@ void Insere_usuario (arvoreb_t *btree) {
 
 	printf("Digite o nome do usuario: ");
 	scanf("%[^\n]s", usr_name);
-	getc(stdin);
 
 	printf("Digite o tipo do usuario: ");
 	scanf("%d", &tu);
@@ -166,11 +165,11 @@ void Remove_usuario (arvoreb_t *btree) {
 
 	//Operação para remoção do registro no arquivo
 	reg = fopen(FILE_REG, "r+b");
-		fseek(reg, SEEK_SET, pos);
+		fseek(reg, pos, SEEK_SET);
 		fread(&buff, sizeof(char), 1, reg);
 		fread(buffer, sizeof(char), buff, reg);
 		altera_srt(buffer);
-		fseek(reg, SEEK_SET, pos+1); //Ja posiciona o ponteiro apos o indicador de tamanho
+		fseek(reg, pos+1, SEEK_SET); //Ja posiciona o ponteiro apos o indicador de tamanho
 		fwrite(buffer, sizeof(char), buff, reg);
 	fclose(reg);
 
@@ -215,11 +214,12 @@ void Busca_usuario(arvoreb_t *btree) {
 			sleep(2);
 			return;
 		}
-			fseek(reg, SEEK_SET, pos);
+			fseek(reg, pos, SEEK_SET);
 			fread(&buff, sizeof(char), 1, reg);
 			fread(buffer, sizeof(char), buff, reg);
 			strTOstruct(buffer, &usr);
-			file_log("Chave %d encontrada, offset %d\nNome: %s, Tipo Usuario: %d.\n", usr.id, pos, usr.nome, usr.tu);
+			file_log("Chave %d encontrada, offset %ld\nNome: %s, Tipo Usuario: %d.\n", usr.id, pos, usr.nome, usr.tu);
+			sleep(2);
 		fclose(reg);
 	}
 }
@@ -295,7 +295,7 @@ void strTOstruct(char *str, usr_t *usr) {
 	i = 0;
 	j = 0;
 	while (str[i] != '\0' && str[i] != '|') {
-		buffer[j] = buffer[i];
+		buffer[j] = str[i];
 		i++;
 		j++;
 	}
