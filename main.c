@@ -51,6 +51,7 @@ int main(void) {
 
 			case 4:
 				clearScreen();
+				file_log("Execucao de operacao para mostrar a arvore-B gerada:");
 				printArvoreB(btree);
 				break;
 
@@ -130,6 +131,7 @@ void Insere_usuario (arvoreb_t *btree) {
 	fclose(reg);
 
 	//Insere na arvore binaria
+	file_log("Execucao de operacao de INSERCAO de %d, %s, %d.\n", id, usr_name, tu);
 	insertArvoreB(btree, id, pos);
 	printf("Insercao feita com sucesso\n");
 	sleep(2);
@@ -173,6 +175,7 @@ void Remove_usuario (arvoreb_t *btree) {
 	fclose(reg);
 
 	//Remove da arvore-b
+	file_log("Execucao de operacao de REMOCAO de %d.\n", id);
 	removeArvoreB(btree, id);
 	printf("Remocao realizada com sucesso\n");
 	sleep(2);
@@ -198,8 +201,10 @@ void Busca_usuario(arvoreb_t *btree) {
 	printf("Digite a id do usuario que deseja consultar: ");
 	scanf("%d", &usr.id);
 	printf("\n");
+	file_log("Execucao de operacao de PESQUISA de %d.\n", usr.id);
 	pos = searchArvoreB(btree, usr.id);
 	if (pos < 0) { //Usuario nao foi encontrado
+		file_log("Chave %d nao encontrada", usr.id);
 		printf("Usuario nao cadastrado\n");
 		sleep(2);
 		return;
@@ -214,6 +219,7 @@ void Busca_usuario(arvoreb_t *btree) {
 			fread(&buff, sizeof(char), 1, reg);
 			fread(buffer, sizeof(char), buff, reg);
 			strTOstruct(buffer, &usr);
+			file_log("Chave %d encontrada, offset %d\nNome: %s, Tipo Usuario: %d.\n", usr.id, pos, usr.nome, usr.tu);
 		fclose(reg);
 	}
 }
@@ -235,6 +241,7 @@ void Load_reg(FILE *reg, arvoreb_t *btree) {
 	char buff;
 	char buffer[MAX_REG];
 
+	file_log("Execucao da criacao do arquivo de indice %s com base no arquivo de dados %s.\n", FILENAMEARVOREB, FILE_REG);
 	rewind(reg);
 	while(!feof(reg)) {
 		pos = ftell(reg);
