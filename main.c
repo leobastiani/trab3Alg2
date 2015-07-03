@@ -9,6 +9,10 @@
 #include "misc.h"
 #include "main.h"
 
+#ifdef DEBUG
+	#define clearScreen() ;
+#endif // DEBUG
+
 /*
 Funcao main apenas pega a opcao do usuario e direciona o programa para a funcao correspondente
 Variaveis:
@@ -64,7 +68,7 @@ int main(void) {
 			default:
 				printf("Opcao invalida, tente novamente\n");
 				opc = 1; //Garante que o usuario podera escolher novamente
-				sleep(2);
+				system_pause();
 				break;
 		}
 
@@ -108,7 +112,7 @@ void Insere_usuario (arvoreb_t *btree) {
 	id = _scanf_int();
 	if (searchArvoreB(btree, id) >= 0) { //Registro com mesmo nome ja existe
 		printf("Usuario ja existente.\n");
-		sleep(2);
+		system_pause();
 		return;
 	}
 
@@ -132,7 +136,7 @@ void Insere_usuario (arvoreb_t *btree) {
 	file_log("Execucao de operacao de INSERCAO de %d, %s, %d.\n", id, usr_name, tu);
 	insertArvoreB(btree, id, pos);
 	printf("Insercao feita com sucesso\n");
-	sleep(2);
+	system_pause();
 }
 
 /*
@@ -158,7 +162,7 @@ void Remove_usuario (arvoreb_t *btree) {
 	pos = searchArvoreB(btree, id);
 	if (pos < 0) { //O usuario nao foi encontrado na arvore-b
 		printf("Usuario nao cadastrado\n");
-		sleep(2);
+		system_pause();
 		return;
 	}
 
@@ -176,7 +180,7 @@ void Remove_usuario (arvoreb_t *btree) {
 	file_log("Execucao de operacao de REMOCAO de %d.\n", id);
 	removeArvoreB(btree, id);
 	printf("Remocao realizada com sucesso\n");
-	sleep(2);
+	system_pause();
 }
 
 /*
@@ -204,13 +208,13 @@ void Busca_usuario(arvoreb_t *btree) {
 	if (pos < 0) { //Usuario nao foi encontrado
 		file_log("Chave %d nao encontrada", usr.id);
 		printf("Usuario nao cadastrado\n");
-		sleep(2);
+		system_pause();
 		return;
 	} else { //Grava as informações do usuario
 		reg = fopen(FILE_REG, "rb");
 		if (reg == NULL) {
 			printf("Nao foi possivel encontrar o arquivo de registros\n");
-			sleep(2);
+			system_pause();
 			return;
 		}
 			fseek(reg, pos, SEEK_SET);
@@ -218,7 +222,7 @@ void Busca_usuario(arvoreb_t *btree) {
 			fread(buffer, sizeof(char), buff, reg);
 			strTOstruct(buffer, &usr);
 			file_log("Chave %d encontrada, offset %ld\nNome: %s, Tipo Usuario: %d.\n", usr.id, pos, usr.nome, usr.tu);
-			sleep(2);
+			system_pause();
 		fclose(reg);
 	}
 }
