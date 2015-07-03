@@ -222,6 +222,7 @@ void Busca_usuario(arvoreb_t *btree) {
 			fread(buffer, sizeof(char), buff, reg);
 			strTOstruct(buffer, &usr);
 			file_log("Chave %d encontrada, offset %ld\nNome: %s, Tipo Usuario: %d.\n", usr.id, pos, usr.nome, usr.tu);
+			printf("Chave %d encontrada, offset %ld\nNome: %s, Tipo Usuario: %d.\n", usr.id, pos, usr.nome, usr.tu);
 			system_pause();
 		fclose(reg);
 	}
