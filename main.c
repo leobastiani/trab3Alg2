@@ -130,7 +130,7 @@ void Insere_usuario (arvoreb_t *btree) {
 		default:
 			printf("Tipo de usuario invalido\n");
 			system_pause();
-			break;
+			return;
 	}
 
 	//Insere no arquivo de registro
