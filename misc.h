@@ -1,6 +1,8 @@
 #ifndef __MISC_H__
 #define __MISC_H__
 
+// #define CHECK_LEAK
+
 char _getchar(); // getchar que não deixa enter no buffer
 void system_pause(); // apenas imitando o pause de system()
 void _scanf_s(char *str, int size); // scanf que retorna uma string
@@ -30,10 +32,17 @@ void section(char *str, ...); // cria uma seção para facilitar o debug da said
 
 // troca as funções de alocação de memória, menos no arquivo .c
 #ifndef __MISC_C__
-	#define malloc _malloc
-	#define realloc _realloc
-	#define calloc _calloc
-	#define free _free
+	#ifdef CHECK_LEAK
+		#define malloc(x)     _malloc(x);     printf("ALLOC_LINE: %d, FILE: %s\n", __LINE__, __FILE__);
+		#define realloc(x, y) _realloc(x, y); printf("ALLOC_LINE: %d, FILE: %s\n", __LINE__, __FILE__);
+		#define calloc(x, y)  _calloc(x, y);  printf("ALLOC_LINE: %d, FILE: %s\n", __LINE__, __FILE__);
+		#define free(x)       _free(x);       printf("FREE_LINE: %d, FILE: %s\n", __LINE__, __FILE__);
+	#else
+		#define malloc _malloc
+		#define realloc _realloc
+		#define calloc _calloc
+		#define free _free
+	#endif // CHECK_LEAK
 #endif
 
 // definindo a função debug que faz a msma coisa que o printf

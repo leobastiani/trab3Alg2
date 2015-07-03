@@ -13,21 +13,19 @@
 #define __MISC_C__
 #include "misc.h"
 
-// 27.06.2015
-
-// #define CHECK_LEAK
+// 03.07.2015
 
 // getchar que não deixa enter no buffer
 char _getchar() {
-	/*char str[5];
+	char str[5];
 	fgets(str, 5, stdin);
-	return *str;*/
+	return *str;
 }
 
 // apenas imitando o pause de system()
 void system_pause() {
-	// puts("Pressione ENTER para continuar. . .");
-	// _getchar();
+	puts("Pressione ENTER para continuar. . .");
+	_getchar();
 }
 
 // scanf que retorna uma string
@@ -73,7 +71,7 @@ void *_malloc(size_t size) {
 		exit(1);
 	}
 	#ifdef CHECK_LEAK
-		printf("MALLOC: %p\n", result);
+		printf("MALLOC: %p => ", result);
 	#endif // CHECK_LEAK
 	return result;
 }
@@ -86,7 +84,7 @@ void *_calloc(size_t count, size_t size) {
 		exit(1);
 	}
 	#ifdef CHECK_LEAK
-		printf("CALLOC: %p\n", result);
+		printf("CALLOC: %p => ", result);
 	#endif // CHECK_LEAK
 	return result;
 }
@@ -100,9 +98,9 @@ void *_realloc(void *ptr, size_t new_size) {
 	}
 	#ifdef CHECK_LEAK
 		if(ptr == NULL) {
-			printf("REALLOC: %p\n", result);	
+			printf("REALLOC: %p =>", result);	
 		} else if(ptr != result) {
-			printf("REALLOC: %p => %p\n", ptr, result);
+			printf("REALLOCATION: %p => %p =>", ptr, result);
 		}
 	#endif // CHECK_LEAK
 	return result;
@@ -112,7 +110,7 @@ void _free(void *ptr) {
 	free(ptr);
 	#ifdef CHECK_LEAK
 		if(ptr != NULL) {
-			printf("FREE: %p\n", ptr);
+			printf("FREE: %p => ", ptr);
 		}
 	#endif // CHECK_LEAK
 }
