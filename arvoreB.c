@@ -204,6 +204,7 @@ bool b_search(arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_
             {
                 if (page->chaves[middle].id == id)
                 {
+                    *offset_page = page->page_num;
                     *ideal_pos = middle;
                     return true;
                 }
@@ -228,6 +229,8 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
     bool busca = false;                             //Variável de controle da busca
     arvoreb_node_t *page = createNodeArvoreB();
     int i;
+    
+    file_log("Execucao de operacao de PESQUISA de %d\n", id);
 
     //Lendo página raiz
     page = loadNodeFromFile(arv, arv->root);
@@ -246,7 +249,11 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
             break;
     }
 
-    return offset;
+    if(busca)
+        return page->chaves[i].offset;
+
+    else
+    	return -1;
 }
 
 /* ====================================================
