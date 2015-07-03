@@ -26,4 +26,8 @@ test:  $(SOURCES)
 	$(CC) $< -o $@ $(CFLAGS)
 
 clear:
-	rm *.o & rm $(EXECUTABLE) & rm arvoreB.btree & rm log_lbastiani.txt
+	rm *.o &
+	rm $(EXECUTABLE) &
+	rm arvoreB.btree &
+	rm log_lbastiani.txt &
+	rm registro.reg
