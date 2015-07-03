@@ -273,7 +273,7 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
 bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 {
 	//Elemento existente
-	if(searchArvoreB(arv, id) == -1)
+	if(searchArvoreB(arv, id) != -1)
 	{
 		file_log("Chave %d duplicada.\n", id);
 		return false;
