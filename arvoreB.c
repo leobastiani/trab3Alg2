@@ -176,6 +176,9 @@ arvoreb_node_t *loadFilhoFromFile(arvoreb_t *arv, arvoreb_node_t *node, int filh
 */
 bool b_search(arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_pos)
 {
+	if(isEmptyArvoreB(arv))
+	return false;
+	
 	int left, right, middle;
 	left = 0;
 	right = page->num_chaves;
@@ -210,10 +213,8 @@ bool b_search(arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_
 							*ideal_pos = middle;
 							return true;
 					}
-
 			}
 		}
-
 }
 
 	return false;
@@ -233,6 +234,9 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
 	int i;
 	
 	file_log("Execucao de operacao de PESQUISA de %d\n", id);
+	
+	if(isEmptyArvoreB(arv))
+        return -1;
 
 	//Lendo página raiz
 	page = loadNodeFromFile(arv, arv->root);
@@ -273,7 +277,6 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 	{
 		file_log("Chave %d duplicada.\n", id);
 		return false;
-		
 	}
 
 	arvoreb_node_t *new_page;
@@ -300,7 +303,8 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 
 		free(new_page);
 
-		return true;
+		file_log("Chave <%d> inserida com sucesso\n", id);
+        	return true;
 	}
 
  //Caso a árvore não esteja vazia
@@ -312,22 +316,24 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 		//Caso a raiz esteja cheia
 		if (new_page->num_chaves == ORDEM-1)
 		{
-				//Criando nova raiz
-			 free(new_page);
-			 new_page = createNodeArvoreB();
-			 new_page->is_folha = false;
-			 arv->num_pages ++;
-			 new_page->page_num = arv->num_pages;
-			 pai = new_page->page_num;
+			//Criando nova raiz
+			free(new_page);
+			new_page = createNodeArvoreB();
+			new_page->is_folha = false;
+			arv->num_pages ++;
+			new_page->page_num = arv->num_pages;
+			pai = new_page->page_num;
 
-			 //Tornando antiga raiz filha da nova raiz
+			//Tornando antiga raiz filha da nova raiz
 				new_page->filhos[0] = arv->root;
 
-				//Mudando a raiz
-				arv->root = pai;
+			//Mudando a raiz
+			arv->root = pai;
 
-			 saveNodeToFile(arv, new_page);
-			 saveToFileArvoreB(arv);
+		 	fseek(arv->fd, pageToOffset(new_page->page_num), SEEK_SET);
+           		fwrite(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+
+           		saveToFileArvoreB(arv);
 
 			 fseek(arv->fd, pageToOffset(new_page->filhos[0]), SEEK_SET);
 			 free(new_page);
@@ -336,41 +342,41 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 			 fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
 
 
-				//Realizando o split na antiga raiz e promovendo um elemento para a nova raiz
-				split(arv, 0, pai, new_page);
+			//Realizando o split na antiga raiz e promovendo um elemento para a nova raiz
+			split(arv, 0, pai, new_page);
 
-				saveNodeToFile(arv, new_page);
+			saveNodeToFile(arv, new_page);
+			free(new_page);
 
-				free(new_page);
+			//Lendo a nova raiz
+			new_page = loadNodeFromFile(arv, arv->root);
 
-				//Lendo a nova raiz
-				new_page = loadNodeFromFile(arv, arv->root);
+			//Qual dos dois filhos da nova raiz irá receber a nova chave
+			int i = 0;
+			if (new_page->chaves[0].id < id)
+				i++;
+	
+			saveNodeToFile(arv, new_page);
+			saveToFileArvoreB(arv);
 
-				//Qual dos dois filhos da nova raiz irá receber a nova chave
-				int i = 0;
-				if (new_page->chaves[0].id < id)
-						i++;
-
-				saveNodeToFile(arv, new_page);
-				saveToFileArvoreB(arv);
-
-				fseek(arv->fd, pageToOffset(new_page->filhos[i]), SEEK_SET);
-				free(new_page);
-				new_page = createNodeArvoreB();
-				fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+			fseek(arv->fd, pageToOffset(new_page->filhos[i]), SEEK_SET);
+			free(new_page);
+			new_page = createNodeArvoreB();
+			fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
 				
-				insertion(arv, id, offset, new_page);
-
-				return true;
+			insertion(arv, id, offset, new_page);
+			file_log("Chave <%d> inserida com sucesso\n", id);
+		
+			return true;
 		}
 
 		//Caso a raiz não esteja cheia
 		else
 		{
-				insertion(arv, id, offset, new_page);
-				return true;
+			insertion(arv, id, offset, new_page);
+			file_log("Chave <%d> inserida com sucesso\n", id);
+            		return true;
 		}
-
 	}
 }
 
@@ -400,7 +406,7 @@ void insertion(arvoreb_t *arv, id_type id, offset_t off, arvoreb_node_t *page)
 
 		//Inserindo a nova chave
 		page->chaves[i+1].id = id;
-		page->chaves[i+1].offset = offset;
+		page->chaves[i+1].offset = off;
 		page->num_chaves ++;
 
 		saveNodeToFile(arv, page);
@@ -423,7 +429,6 @@ void insertion(arvoreb_t *arv, id_type id, offset_t off, arvoreb_node_t *page)
 			//Relendo a página depois do split
 			fseek(arv->fd, pageToOffset(page->page_num), SEEK_SET);
 
-			saveNodeToFile(arv, page);
 			free (page);
 
 			page = createNodeArvoreB();
@@ -506,6 +511,8 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
 		father->chaves[i].offset = filho->chaves[k - 1].offset;
 		filho->chaves[k - 1].id = 0;
 		filho->chaves[k - 1].offset = 0;
+		
+		file_log("Chave <%d> promovida\n", father->chaves[i].id);
 
 		//Incrementando o número de chaves no nó pai
 		father->num_chaves = father->num_chaves + 1;
