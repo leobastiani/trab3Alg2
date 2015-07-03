@@ -244,7 +244,7 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
 	//Enquanto a busca não for bem sucedida
 	while(!busca)
 	{
-		busca = b_search(page, id, &offset, &i);
+		busca = b_search(arv, page, id, &offset, &i);
 
 		if (!busca && offset != -1)
 		{
@@ -335,11 +335,11 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 
            		saveToFileArvoreB(arv);
 
-			 fseek(arv->fd, pageToOffset(new_page->filhos[0]), SEEK_SET);
-			 free(new_page);
-			 new_page = createNodeArvoreB();
+			fseek(arv->fd, pageToOffset(new_page->filhos[0]), SEEK_SET);
+			free(new_page);
+			new_page = createNodeArvoreB();
 
-			 fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+			fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
 
 
 			//Realizando o split na antiga raiz e promovendo um elemento para a nova raiz
@@ -416,7 +416,7 @@ void insertion(arvoreb_t *arv, id_type id, offset_t off, arvoreb_node_t *page)
 	else
 	{
 		//Buscando o nó filho que ira receber a nova chave
-		b_search(page, id, &offset, &ideal_pos);
+		b_search(arv, page, id, &offset, &ideal_pos);
 
 		new_page = loadNodeFromFile(arv, offset);
 
