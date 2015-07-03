@@ -107,7 +107,7 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id);
 * @return a função retorna o byte offset do registro do arquivo de dados identificado por id
 */
 
-bool b_search(arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_pos);
+bool b_search(arvoreb_t *arv, arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_pos);
 /**
 * Função que realiza a busca binária em uma página
 * @param page é a página em que é feita a bsca, id é o ID buscado, offset_page é um ponteiro para a página
