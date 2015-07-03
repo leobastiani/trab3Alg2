@@ -32,7 +32,7 @@ int main(void) {
 	while (opc) {
 		clearScreen();
 		main_menu();
-		scanf("%d", &opc);
+		opc = _scanf_int();
 		printf("==========================================================\n");
 
 		switch (opc) {
@@ -105,8 +105,7 @@ void Insere_usuario (arvoreb_t *btree) {
 	char buffer[MAX_REG];
 
 	printf("Digite a id do usuario: ");
-	scanf("%d", &id);
-	getc(stdin);
+	id = _scanf_int();
 	if (searchArvoreB(btree, id) >= 0) { //Registro com mesmo nome ja existe
 		printf("Usuario ja existente.\n");
 		sleep(2);
@@ -114,11 +113,11 @@ void Insere_usuario (arvoreb_t *btree) {
 	}
 
 	printf("Digite o nome do usuario: ");
-	scanf("%[^\n]s", usr_name);
+	_scanf_s(usr_name, MAX_USR_NM);
 
 	printf("Digite o tipo do usuario: ");
-	scanf("%d", &tu);
-	printf("\n");
+	tu = _scanf_int();
+	printf("\n"); 
 
 	//Insere no arquivo de registro
 	reg = fopen(FILE_REG, "ab");
@@ -154,7 +153,7 @@ void Remove_usuario (arvoreb_t *btree) {
 	char buffer[MAX_REG];
 
 	printf("Digite a id do usuario que deseja consultar: ");
-	scanf("%d", &id);
+	id = _scanf_int();
 	printf("\n");
 	pos = searchArvoreB(btree, id);
 	if (pos < 0) { //O usuario nao foi encontrado na arvore-b
@@ -198,7 +197,7 @@ void Busca_usuario(arvoreb_t *btree) {
 	char buffer[MAX_REG];
 
 	printf("Digite a id do usuario que deseja consultar: ");
-	scanf("%d", &usr.id);
+	usr.id = _scanf_int();
 	printf("\n");
 	file_log("Execucao de operacao de PESQUISA de %d.\n", usr.id);
 	pos = searchArvoreB(btree, usr.id);
