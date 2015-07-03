@@ -54,7 +54,7 @@ int main(void) {
 
 			case 4:
 				clearScreen();
-				file_log("Execucao de operacao para mostrar a arvore-B gerada:");
+				file_log("Execucao de operacao para mostrar a arvore-B gerada:\n");
 				printArvoreB(btree);
 				break;
 
