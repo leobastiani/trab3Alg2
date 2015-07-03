@@ -260,9 +260,12 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
 bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 {
     //Elemento existente
-    if(searchArvoreB(arv, id) == -1){
-        printf("Elemento existente.\n");
-        return false;}
+    if(searchArvoreB(arv, id) == -1)
+    {
+        file_log("Chave %d duplicada.\n", id);
+        return false;
+    	
+    }
 
     arvoreb_node_t *new_page;
     page_t pai;
@@ -346,6 +349,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
             free(new_page);
             new_page = createNodeArvoreB();
             fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
+            
             insertion(arv, id, offset, new_page);
 
             return true;
@@ -466,13 +470,10 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
     }
 
     //Decrementando o número de chaves de filho
-    filho->num_chaves = k - 1;
+    filho->num_chaves = filho->num_chaves -(k - 1);
 
     saveNodeToFile(arv, new_page);
-    saveNodeToFile(arv, filho);
-
     num_aux = new_page->page_num;
-
     free(new_page);
 
 
@@ -499,8 +500,10 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
 
     //Incrementando o número de chaves no nó pai
     father->num_chaves = father->num_chaves + 1;
+    filho->num_chaves = filho->num_chaves -1;
 
     saveNodeToFile(arv, father);
+    saveNodeToFile(arv, filho);
     free(father);
 }
 
