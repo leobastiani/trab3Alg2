@@ -121,7 +121,18 @@ void Insere_usuario (arvoreb_t *btree) {
 
 	printf("Digite o tipo do usuario: ");
 	tu = _scanf_int();
-	printf("\n"); 
+	printf("\n");
+	switch(tu) {
+		case 1:
+		case 2:
+		case 3:
+			debug("Tipo de usuario adicionado: %d", tu);
+			break;
+		default:
+			printf("Tipo de usuario invalido\n");
+			system_pause();
+			break;
+	}
 
 	//Insere no arquivo de registro
 	reg = fopen(FILE_REG, "ab");
