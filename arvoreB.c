@@ -174,7 +174,7 @@ arvoreb_node_t *loadFilhoFromFile(arvoreb_t *arv, arvoreb_node_t *node, int filh
 *        por offset_page.
 * @return a função retorna true se o elemento foi encontrado na página e false, caso contrário.
 */
-bool b_search(arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_pos)
+bool b_search(arvoreb_t *arv, arvoreb_node_t *page, id_type id, page_t *offset_page, int *ideal_pos)
 {
 	if(isEmptyArvoreB(arv))
 	return false;
