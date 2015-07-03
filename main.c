@@ -15,8 +15,9 @@ Funcao main apenas pega a opcao do usuario e direciona o programa para a funcao 
 Variaveis:
 	opc- opcao digitada pelo usuario
 	btree- arvore binaria
+	reg- possivel arquivo de registros ja existente
 */
-int main(int argc, char *argv[]) {
+int main(void) {
 	int opc;
 	arvoreb_t *btree;
 
@@ -84,6 +85,15 @@ void main_menu (void) {
 
 /*
 Funcao que insere um usuario na btree e no arquivo de registro, se necessario
+Variaveis:
+	btree- arvore binária
+	id- numero da id a ser inserida
+	pos- posicao do registro no arquivo de registros
+	reg- arquivo de registros
+	tu- tipo de usuario a ser inserido
+	buff- guarda o tamanho da string a ser armazenada no arquivo de registros
+	usr_name- nome do usuario a ser inserido
+	buffer- string que guarda todo o registro
 */
 void Insere_usuario (arvoreb_t *btree) {
 	id_type id;
@@ -96,7 +106,6 @@ void Insere_usuario (arvoreb_t *btree) {
 
 	printf("Digite a id do usuario: ");
 	scanf("%d", &id);
-	getc(stdin);
 	if (searchArvoreB(btree, id) >= 0) { //Registro com mesmo nome ja existe
 		printf("Usuario ja existente.\n");
 		sleep(2);
@@ -126,6 +135,16 @@ void Insere_usuario (arvoreb_t *btree) {
 	sleep(2);
 }
 
+/*
+Funcao que remove um usuario da btree e do arquivo de registro
+Variaveis:
+	btree- arvore binaria
+	id- numero da id a ser removida
+	pos- posicao da id no arquivo de registros
+	reg- arquivo de registros
+	buff- guarda o tamanho da string do registro
+	buffer- string que guarda todo o registro
+*/
 void Remove_usuario (arvoreb_t *btree) {
 	id_type id;
 	offset_t pos;
@@ -159,6 +178,16 @@ void Remove_usuario (arvoreb_t *btree) {
 	sleep(2);
 }
 
+/*
+Funcao que busca um usuario na btree
+Variaveis:
+	btree- arvore binaria
+	usr- struct que representa e guarda as informações do usuário a ser buscado
+	pos- posicao da id no arquivo de registros
+	reg- arquivo de registros
+	buff- guarda o tamanho da string do registro
+	buffer- string que guarda todo o registro
+*/
 void Busca_usuario(arvoreb_t *btree) {
 	offset_t pos;
 	usr_t usr;
@@ -189,6 +218,17 @@ void Busca_usuario(arvoreb_t *btree) {
 	}
 }
 
+/*
+Funcao que carrega um arquivo de registros ja existente para uma btree
+Variaveis:
+	reg- arquivo de registros
+	btree- arvore binaria
+	usr- struct que representa um determinado usuário
+	pos- posicao da id no arquivo de registros
+	reg- arquivo de registros
+	buff- guarda o tamanho da string a ser armazenada no arquivo de registros
+	buffer- string que guarda um registro inteiro
+*/
 void Load_reg(FILE *reg, arvoreb_t *btree) {
 	usr_t usr;
 	offset_t pos;
@@ -207,6 +247,15 @@ void Load_reg(FILE *reg, arvoreb_t *btree) {
 	}
 }
 
+/*
+Função que altera uma string de um registro para que ela passe a indicar que o registro foi apagado
+Variáveis:
+	str- string a ser alterada
+	i- contador
+Retorno:
+	0- a string foi alterada com sucesso
+	-3- a string não foi gravada corretamente
+*/
 int altera_srt(char *str) {
 	int i;
 
@@ -223,6 +272,14 @@ int altera_srt(char *str) {
 	}
 }
 
+/*
+Função que passa uma string com um registro para uma struct que representará o registro em memória
+Variáveis:
+	str- string com o registro
+	usr- string para representar o registro
+	i, j- contadores
+	buffer- usado para gravar temporáriamente cada informação do registro separadamente
+*/
 void strTOstruct(char *str, usr_t *usr) {
 	int i, j;
 	char buffer[10];
