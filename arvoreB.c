@@ -49,6 +49,7 @@ void saveToFileArvoreB(arvoreb_t *arv) {
 	fwrite(&arv->root, sizeof(page_t), 1, arv->fd);
 	fwrite(&arv->num_pages, sizeof(uint), 1, arv->fd);
 	fwrite(&arv->empty_pages, sizeof(page_t), 1, arv->fd);
+	fflush(arv->fd);
 }
 
 /**
@@ -102,6 +103,7 @@ void saveNodeToFile(arvoreb_t *arv, arvoreb_node_t *node) {
 	}
 	fseek(arv->fd, pageToOffset(node->page_num), SEEK_SET);
 	fwrite(node, sizeof(arvoreb_node_t), 1, arv->fd);
+	fflush(arv->fd);
 	debug("Salvando página %d\n", node->page_num);
 }
 
