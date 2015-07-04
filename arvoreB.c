@@ -229,7 +229,7 @@ bool b_search(arvoreb_t *arv, arvoreb_node_t *page, id_type id, page_t *offset_p
 */
 offset_t searchArvoreB(arvoreb_t *arv, id_type id)
 {
-    file_log("“Execucao de operacao de PESQUISA de <%d>\n", id);
+    file_log("Execucao de operacao de PESQUISA de <%d>\n", id);
     if(isEmptyArvoreB(arv))
         return -1;
 
@@ -261,7 +261,7 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
         return page->chaves[i].offset;
 
     else
-    	file_log("Chave <%d> nao encontrada\n", id);
+    	file_log("Chave %d nao encontrada\n", id);
         return -1;
 }
 
@@ -278,7 +278,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
     //Elemento existente
     if(searchArvoreB(arv, id) != -1)
     {
-        file_log("Chave <%d> duplicada\n", id);
+        file_log("Chave %d duplicada\n", id);
         return false;
     }
 
@@ -306,7 +306,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 
         free(new_page);
 
-        file_log("Chave <%d> inserida com sucesso\n", id);
+        file_log("Chave %d inserida com sucesso\n", id);
         return true;
     }
 
@@ -371,7 +371,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
             fread(new_page, sizeof(arvoreb_node_t), 1, arv->fd);
 
             insertion(arv, id, offset, new_page);
-            file_log("Chave <%d> inserida com sucesso\n", id);
+            file_log("Chave %d inserida com sucesso\n", id);
 
             return true;
         }
@@ -380,7 +380,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
         else
         {
             insertion(arv, id, offset, new_page);
-            file_log("Chave <%d> inserida com sucesso\n", id);
+            file_log("Chave %d inserida com sucesso\n", id);
             return true;
         }
     }
@@ -519,7 +519,7 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
     filho->chaves[k - 1].id = 0;
     filho->chaves[k - 1].offset = 0;
 
-    file_log("Chave <%d> promovida\n", father->chaves[i].id);
+    file_log("Chave %d promovida\n", father->chaves[i].id);
 
     //Incrementando o número de chaves no nó pai
     father->num_chaves = father->num_chaves + 1;
