@@ -261,7 +261,7 @@ offset_t searchArvoreB(arvoreb_t *arv, id_type id)
         return page->chaves[i].offset;
 
     else
-    	file_log("Chave %d nao encontrada", id);
+    	file_log("Chave <%d> nao encontrada\n", id);
         return -1;
 }
 
