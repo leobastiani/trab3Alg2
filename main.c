@@ -134,7 +134,7 @@ void Insere_usuario (arvoreb_t *btree) {
 		case 1:
 		case 2:
 		case 3:
-			debug("Tipo de usuario adicionado: %d", tu);
+			debug("Tipo de usuario adicionado: %d\n", tu);
 			break;
 		default:
 			printf("Tipo de usuario invalido\n");
