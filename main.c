@@ -260,8 +260,10 @@ void Load_reg(FILE *reg, arvoreb_t *btree) {
 		fread(buffer, sizeof(char), buff, reg);
 		strTOstruct(buffer, &usr);
 
-		//Insere apenas na arvore binaria
-		insertArvoreB(btree, usr.id, pos);
+		//Insere apenas na arvore binaria se o registro ainda nao foi removido
+		if(usr.nome[0] != '*') {
+			insertArvoreB(btree, usr.id, pos);
+		}
 	}
 }
 
