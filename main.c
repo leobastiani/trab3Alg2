@@ -63,6 +63,7 @@ int main(void) {
 			case 4:
 				clearScreen();
 				printArvoreB(btree);
+				system_pause();
 				break;
 
 			case 5:
