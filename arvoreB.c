@@ -359,6 +359,7 @@ bool insertArvoreB(arvoreb_t *arv, id_type id, offset_t offset)
 
             //Realizando o split na antiga raiz e promovendo um elemento para a nova raiz
             split(arv, 0, pai, new_page);
+           debug("new_page->num_chaves = %d\n", new_page->num_chaves);
 
             saveNodeToFile(arv, new_page);
             free(new_page);
@@ -481,7 +482,7 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
     arvoreb_node_t *new_page = createNodeArvoreB();
     new_page->page_num = getNewPage(arv);
     new_page->is_folha = filho->is_folha;
-    new_page->num_chaves = k -1;
+    new_page->num_chaves = MIN_CHAVES;
 
     //Copiando os elementos
     for (j = 0; j < k -1; j++)
@@ -497,11 +498,10 @@ void split(arvoreb_t *arv, int i, page_t pai, arvoreb_node_t *filho)
     {
         for (j = 0; j < k; j++)
             new_page->filhos[j] = filho->filhos[j+k];
-            filho->filhos[j+k] = -1;
     }
 
     //Decrementando o número de chaves de filho
-    filho->num_chaves = filho->num_chaves -(k - 1);
+    filho->num_chaves -= MIN_CHAVES;
 
     saveNodeToFile(arv, new_page);
     num_aux = new_page->page_num;
