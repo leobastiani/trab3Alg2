@@ -1,3 +1,11 @@
+/*
+Alunos participantes do trabalho:
+Nomes (N°USP):
+	Guilherme José Acra (7150306)
+	Leonardo Guarnieri de Bastiani (8910434)
+	Luiza Vilas Boas de Oliveira (8503972)
+	Ricardo Chagas (8957242)
+*/
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
