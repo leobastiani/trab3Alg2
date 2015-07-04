@@ -229,7 +229,7 @@ bool b_search(arvoreb_t *arv, arvoreb_node_t *page, id_type id, page_t *offset_p
 */
 offset_t searchArvoreB(arvoreb_t *arv, id_type id)
 {
-    file_log("Execucao de operacao de PESQUISA de <%d>\n", id);
+    file_log("Execucao de operacao de PESQUISA de %d\n", id);
     if(isEmptyArvoreB(arv))
         return -1;
 
